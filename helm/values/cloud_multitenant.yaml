@@ -1,0 +1,43 @@
+# This configuration complements the one in main values.yaml!
+# Take into account that other components and pipelines are created there!
+opentelemetry-collector:
+  fullnameOverride: "otelcol-multitenant"
+
+  alternateConfig:
+    extensions:
+      bearertokenauth/k8smetrics:
+        scheme: "Bearer"
+        token: #ADD TOKEN HERE
+      bearertokenauth/spanmetrics:
+        scheme: "Bearer"
+        token: #ADD TOKEN HERE
+
+    exporters:
+      otlphttp/cloud-k8smetrics:
+        compression: gzip
+        encoding: proto
+        endpoint: #ADD URL HERE https://XXXXX.cloud.victoriametrics.com/opentelemetry
+        auth:
+          authenticator: bearertokenauth/k8smetrics
+
+      otlphttp/cloud-spanmetrics:
+        compression: gzip
+        encoding: proto
+        endpoint: #ADD URL HERE https://XXXXX.cloud.victoriametrics.com/opentelemetry
+        auth:
+          authenticator: bearertokenauth/spanmetrics
+
+    service:
+      extensions:
+          - bearertokenauth/k8smetrics
+          - bearertokenauth/spanmetrics
+          - health_check
+      pipelines:
+        metrics/cloud:
+          receivers: [otlp]
+          processors: []
+          exporters: [otlphttp/cloud-k8smetrics]
+        metrics/spanmetrics:
+          receivers: [spanmetrics]
+          exporters: [otlphttp/cloud-spanmetrics]
+

@@ -1,0 +1,204 @@
+serverMock:
+  name: server-mock
+  replicaCount: 1
+  image:
+    repository: ghcr.io/jgomezselles/server-mock-otel
+    pullPolicy: IfNotPresent
+    tag: 0.0.1
+  service:
+    type: ClusterIP
+    port: 8080
+  resources: {}
+  env:
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: "http/protobuf"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4318"
+
+hermes:
+  script:
+    cm: traffic-script-cm
+  image:
+    repository: ghcr.io/jgomezselles/hermes
+    tag: 0.0.7
+    pullPolicy: IfNotPresent
+  o11y:
+    metrics_endpoint: http://otelcol:4318/v1/metrics
+    #http://vm-svc:8428/opentelemetry/api/v1/push
+    traces_endpoint: http://otelcol:4318/v1/traces
+
+victoria-metrics-single:
+  server:
+    fullnameOverride: "vm-svc"
+    persistentVolume:
+      enabled: false
+    scrape:
+      enabled: true
+    extraArgs:
+      opentelemetry.usePrometheusNaming: false
+
+victoria-logs-single:
+  server:
+    fullnameOverride: "vl-svc"
+    persistentVolume:
+      enabled: false
+    deployment:
+      spec:
+        strategy:
+          type: RollingUpdate
+    emptyDir:
+      medium: Memory
+      sizeLimit: 500Mi
+
+victoria-traces-single:
+  server:
+    fullnameOverride: "vt-svc"
+    persistentVolume:
+      enabled: false
+    deployment:
+      spec:
+        strategy:
+          type: RollingUpdate
+    emptyDir:
+      medium: Memory
+      sizeLimit: 500Mi
+    extraArgs:
+      servicegraph.enableTask: true
+
+jaeger:
+  enabled: true
+  fullnameOverride: "jaeger-svc"
+  provisionDataStore:
+    cassandra: false
+  allInOne:
+    enabled: true
+  storage:
+    type: memory
+  agent:
+    enabled: false
+  collector:
+    enabled: false
+  query:
+    enabled: false
+
+opentelemetry-collector:
+  fullnameOverride: "otelcol"
+  mode: deployment
+  image:
+    repository: "otel/opentelemetry-collector-contrib"
+  presets:
+    clusterMetrics:
+      enabled: true
+    kubernetesEvents:
+      enabled: true
+    logsCollection:
+      enabled: true
+    kubernetesAttributes:
+      enabled: true
+
+  alternateConfig:
+    extensions:
+      health_check:
+        endpoint: ${env:MY_POD_IP}:13133
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    exporters:
+      otlphttp/victoriametrics:
+        compression: gzip
+        encoding: proto
+        # Setting below will work for sending data to VictoriaMetrics single-node version.
+        # Cluster version of VictoriaMetrics will require a different URL - https://docs.victoriametrics.com/cluster-victoriametrics/#url-format
+        # http://vm-svc:8428/opentelemetry
+        endpoint: http://vm-svc:8428/opentelemetry
+        tls:
+           insecure: true
+      otlphttp/victorialogs:
+        logs_endpoint: http://vl-svc:9428/insert/opentelemetry/v1/logs
+        headers:
+          VL-Msg-Field: object.note
+          VL-Stream-Fields: object.regarding.fieldPath,k8s.container.name
+      otlphttp/victoriatraces:
+        endpoint: http://vt-svc:10428/insert/opentelemetry
+        tls:
+           insecure: true
+      otlp/jaeger:
+        endpoint: jaeger-svc-collector:4317
+        tls:
+           insecure: true
+
+    connectors:
+      spanmetrics: {}
+
+    service:
+      extensions: [health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: []
+          exporters: [otlphttp/victoriametrics]
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [spanmetrics, otlp/jaeger, otlphttp/victoriatraces]
+        metrics/spanmetrics:
+          receivers: [spanmetrics]
+          exporters: [otlphttp/victoriametrics]
+        logs:
+          receivers: [otlp]
+          processors: []
+          exporters: [otlphttp/victorialogs]
+
+grafana:
+  adminPassword: admin
+  plugins:
+    - victoriametrics-metrics-datasource
+    - victoriametrics-logs-datasource
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://vm-svc:8428
+        access: proxy
+        isDefault: false
+        uid: hermes-prometheus-datasource
+      # <string, required> Name of the VictoriaMetrics datasource
+      # displayed in Grafana panels and queries.
+      - name: VictoriaMetrics
+        type: victoriametrics-metrics-datasource
+        access: proxy
+        url: http://vm-svc:8428
+        isDefault: true
+      - name: VictoriaLogs
+        type: victoriametrics-logs-datasource
+        access: proxy
+        url: http://vl-svc:9428
+      - name: VictoriaTraces
+        type: jaeger
+        access: proxy
+        url: http://vt-svc:10428/select/jaeger
+      deleteDatasources:
+      - name: Prometheus
+
+  dashboardProviders:
+   dashboardproviders.yaml:
+     apiVersion: 1
+     providers:
+     - name: 'default'
+       orgId: 1
+       folder: ''
+       type: file
+       disableDeletion: false
+       editable: true
+       options:
+         path: /var/lib/grafana/dashboards/default
+
+  dashboardsConfigMaps:
+    default: "hermes-dashboard"

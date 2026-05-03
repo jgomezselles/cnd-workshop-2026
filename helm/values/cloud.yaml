@@ -1,0 +1,28 @@
+# This configuration complements the one in main values.yaml!
+# Take into account that other components and pipelines are created there!
+opentelemetry-collector:
+  fullnameOverride: "otelcol-cloud"
+
+  alternateConfig:
+    extensions:
+      bearertokenauth:
+        scheme: "Bearer"
+        token: #ADD TOKEN HERE
+
+    exporters:
+      otlphttp/cloud:
+        compression: gzip
+        encoding: proto
+        endpoint: #ADD URL HERE https://XXXXX.cloud.victoriametrics.com/opentelemetry
+        auth:
+          authenticator: bearertokenauth
+
+    service:
+      extensions:
+          - bearertokenauth
+          - health_check
+      pipelines:
+        metrics/cloud:
+          receivers: [otlp]
+          processors: []
+          exporters: [otlphttp/cloud]

@@ -1,0 +1,36 @@
+apiVersion: v2
+name: example-hermes
+description: Example integrating hermes with a server mock.
+type: application
+version: 0.0.1
+appVersion: "0.0.1"
+
+dependencies:
+  - name: hermes
+    version: 0.0.3
+    repository: https://jgomezselles.github.io/hermes-charts
+
+  - name: opentelemetry-collector
+    version: 0.127.2
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+
+  - name: victoria-metrics-single
+    version: 0.25.1
+    repository: https://victoriametrics.github.io/helm-charts
+
+  - name: victoria-logs-single
+    version: 0.11.15
+    repository: https://victoriametrics.github.io/helm-charts
+
+  - name: victoria-traces-single
+    version: 0.0.2
+    repository: https://victoriametrics.github.io/helm-charts
+
+  - name: jaeger
+    version: 3.3.2
+    repository: https://jaegertracing.github.io/helm-charts
+    condition: jaeger.enabled
+
+  - name: grafana
+    version: 9.2.7
+    repository: https://grafana.github.io/helm-charts

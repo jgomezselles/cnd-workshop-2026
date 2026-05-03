@@ -9,22 +9,27 @@ dependencies:
   - name: hermes
     version: 0.0.3
     repository: https://jgomezselles.github.io/hermes-charts
+    condition: hermes.enabled
 
   - name: opentelemetry-collector
     version: 0.127.2
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+    condition: opentelemetry-collector.enabled
 
   - name: victoria-metrics-single
     version: 0.25.1
     repository: https://victoriametrics.github.io/helm-charts
+    condition: victoria-metrics-single.enabled
 
   - name: victoria-logs-single
     version: 0.11.15
     repository: https://victoriametrics.github.io/helm-charts
+    condition: victoria-logs-single.enabled
 
   - name: victoria-traces-single
     version: 0.0.2
     repository: https://victoriametrics.github.io/helm-charts
+    condition: victoria-traces-single.enabled
 
   - name: jaeger
     version: 3.3.2
@@ -34,3 +39,4 @@ dependencies:
   - name: grafana
     version: 9.2.7
     repository: https://grafana.github.io/helm-charts
+    condition: grafana.enabled

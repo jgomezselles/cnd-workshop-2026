@@ -16,6 +16,7 @@ serverMock:
       value: "http://otelcol:4318"
 
 hermes:
+  enabled: true
   script:
     cm: traffic-script-cm
   image:
@@ -28,6 +29,7 @@ hermes:
     traces_endpoint: http://otelcol:4318/v1/traces
 
 victoria-metrics-single:
+  enabled: true
   server:
     fullnameOverride: "vm-svc"
     persistentVolume:
@@ -38,6 +40,7 @@ victoria-metrics-single:
       opentelemetry.usePrometheusNaming: false
 
 victoria-logs-single:
+  enabled: true
   server:
     fullnameOverride: "vl-svc"
     persistentVolume:
@@ -51,6 +54,7 @@ victoria-logs-single:
       sizeLimit: 500Mi
 
 victoria-traces-single:
+  enabled: true
   server:
     fullnameOverride: "vt-svc"
     persistentVolume:
@@ -82,6 +86,7 @@ jaeger:
     enabled: false
 
 opentelemetry-collector:
+  enabled: true
   fullnameOverride: "otelcol"
   mode: deployment
   image:
@@ -155,6 +160,7 @@ opentelemetry-collector:
           exporters: [otlphttp/victorialogs]
 
 grafana:
+  enabled: true
   adminPassword: admin
   plugins:
     - victoriametrics-metrics-datasource

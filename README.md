@@ -26,13 +26,13 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
 * Repo link: https://github.com/jgomezselles/cnd-workshop-2026
 
 # TODOs
-- [] Presentation
+- [ ] Presentation
 - [X] Create repo
 - [X] Create workshop organization
   - [X] Provide credits for the cluster
-  - [] Run cluster 2 days before the WS
-  - [] Invite users into the org
-  - [] Assign tenants
+  - [ ] Run cluster 2 days before the WS
+  - [ ] Invite users into the org
+  - [ ] Assign tenants
 
 
 # Part I

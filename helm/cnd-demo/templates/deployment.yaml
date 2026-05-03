@@ -3,12 +3,12 @@ kind: Deployment
 metadata:
   name: {{ .Values.serverMock.name }}
   labels:
-    {{- include "example-hermes.labels" . | nindent 4 }}
+    {{- include "cnd-demo.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.serverMock.replicaCount }}
   selector:
     matchLabels:
-      {{- include "example-hermes.selectorLabels" . | nindent 6 }}
+      {{- include "cnd-demo.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,7 +16,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "example-hermes.selectorLabels" . | nindent 8 }}
+        {{- include "cnd-demo.selectorLabels" . | nindent 8 }}
     spec:
       containers:
         - name: server-mock

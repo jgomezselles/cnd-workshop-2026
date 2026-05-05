@@ -163,6 +163,9 @@ We can observe (taken from the docs):
 | **TraceZ**| Available to examine and bucketize spans by latency buckets | http://localhost:55679/debug/tracez |
 | ExpvarZ | Useful information about Go runtime | http://localhost:55679/debug/expvarz |
 
+> Now, what did these presets we enabled actually do?
+> By inspecting the [PipelineZ](http://localhost:55679/debug/pipelinez), we can see that our
+> metrics pipeline has been automatically modified.
 
 ## Watch metrics in Cloud
 TBD

@@ -67,15 +67,50 @@ provides a vendor-agnostic implementation that:
 * allows sending data to one or more open source or commercial backends.
 
 ## Install OpenTelemetry collector
+
+### Clone the repo
+If you're here, you may already have it, but this repo si available here:
+
+```sh
+git clone git@github.com:jgomezselles/cnd-workshop-2026.git
+```
+
+### Adding helm repos
+
+Throughout this demo we will be using some helm charts as dependencies. For them to work, we need
+to add them by:
+
+```sh
+helm repo add hermes https://jgomezselles.github.io/hermes-charts  ## Load generator, instrumented with OTel
+helm repo add otelcol https://open-telemetry.github.io/opentelemetry-helm-charts ## To collect, transform and send telemetry
+helm repo add vm https://victoriametrics.github.io/helm-charts  ## To store and visualize telemetry
+helm repo add jaeger https://jaegertracing.github.io/helm-charts    ## To store and visualize traces
+helm repo add grafana https://grafana.github.io/helm-charts    ## To visualize telemetry
+```
+
+### Update dependencies
+Now we need to download these dependencies by running:
+```sh
+helm dep update helm/cnd-demo
+```
+
+### The OTel collector values
 TODO:
-* Download charts (helm repo add, )
 * Download generic values file of the OTel collector and inspect
   * Notice different important sections (receivers, exporters, processors, connectors and service pipelines)
   * Explain the contrib image we will use: https://github.com/open-telemetry/opentelemetry-collector-contrib
-* Explain the concept of presets: https://opentelemetry.io/docs/platforms/kubernetes/helm/collector/#presets
 
-* Create namespace (cnd-ws)
-* helm dep update
+### Presets
+We will be using some presets to help:
+* Explain the concept of presets: https://opentelemetry.io/docs/platforms/kubernetes/helm/collector/#presets
+* Explain the first preset we will be using:
+
+### Installing the collector
+First, we will create a namespace:
+```sh
+kubectl create ns cnd-ws
+```
+
 * install the collector with step-1.yaml like "helm install ws helm/cnd-demo -f helm/values/step-1.yaml -n cnd-ws"
 
 ### First approach debugging the collector

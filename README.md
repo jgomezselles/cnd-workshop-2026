@@ -35,6 +35,13 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
   - [ ] Assign tenants
 
 
+# Requirements
+
+## Tooling
+* docker
+* small k8s distro: minikube, kind or similar
+* helm
+
 # Part I
 
 ## OpenTelemetry intro
@@ -60,7 +67,36 @@ provides a vendor-agnostic implementation that:
 * allows sending data to one or more open source or commercial backends.
 
 ## Install OpenTelemetry collector
-TBD
+TODO:
+* Download charts (helm repo add, )
+* Download generic values file of the OTel collector and inspect
+  * Notice different important sections (receivers, exporters, processors, connectors and service pipelines)
+  * Explain the contrib image we will use: https://github.com/open-telemetry/opentelemetry-collector-contrib
+* Explain the concept of presets: https://opentelemetry.io/docs/platforms/kubernetes/helm/collector/#presets
+
+* Create namespace (cnd-ws)
+* helm dep update
+* install the collector with step-1.yaml like "helm install ws helm/cnd-demo -f helm/values/step-1.yaml -n cnd-ws"
+
+### First approach debugging the collector
+
+We will use the [zpages extension](https://github.com/open-telemetry/opentelemetry-collector/blob/main/extension/zpagesextension/README.md).
+After performing a port forwarding like:
+
+```sh
+kubectl port-forward -n cnd-ws deployments/otelcol 55679:55679
+```
+We can observe (taken from the docs):
+
+| zPages route | Description | URL  |
+|--------------|-------------|------|
+| **ServiceZ** | Overview of the collector services and quick access to the pipelinez, extensionz, and featurez zPages.|  http://localhost:55679/debug/servicez |
+| **PipelineZ** | Running pipelines in the collector | http://localhost:55679/debug/pipelinez |
+| **ExtensionZ**| Shows the extensions that are active in the collector.|  http://localhost:55679/debug/extensionz |
+| **FeatureZ** | Lists the feature gates available along with their current status and description. | http://localhost:55679/debug/featurez |
+| **TraceZ**| Available to examine and bucketize spans by latency buckets | http://localhost:55679/debug/tracez |
+| ExpvarZ | Useful information about Go runtime | http://localhost:55679/debug/expvarz |
+
 
 ## Watch metrics in Cloud
 TBD

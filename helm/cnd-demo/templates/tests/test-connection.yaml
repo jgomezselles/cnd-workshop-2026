@@ -1,3 +1,4 @@
+{{- if .Values.serverMock.enabled }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -13,3 +14,4 @@ spec:
       command: ['wget']
       args: ['{{ .Values.serverMock.name }}:{{ .Values.serverMock.service.port }}//url/example/path/test']
   restartPolicy: Never
+{{- end }}

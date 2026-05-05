@@ -95,15 +95,46 @@ helm dep update helm/cnd-demo
 ```
 
 ### The OTel collector values
-TODO:
-* Download generic values file of the OTel collector and inspect
-  * Notice different important sections (receivers, exporters, processors, connectors and service pipelines)
-  * Explain the contrib image we will use: https://github.com/open-telemetry/opentelemetry-collector-contrib
+
+You can inspect the full default configuration of the OTel collector helm chart by running:
+
+```sh
+helm show values otelcol/opentelemetry-collector > otelcol-default.yaml
+```
+
+This dumps all available options with their defaults. The key sections to understand are:
+
+* **`receivers`**: define how telemetry data enters the collector (e.g., OTLP over gRPC on port 4317 or HTTP on port 4318)
+* **`processors`**: transform, filter, or batch data in-flight (e.g., `memory_limiter`, `batch`, `k8sattributes`)
+* **`exporters`**: define where processed data is sent (e.g., `debug` to stdout, `otlphttp` to a backend)
+* **`connectors`**: bridge two pipelines together; for example, `spanmetrics` derives RED metrics directly from traces
+* **`service.pipelines`**: wire the above components into named signal pipelines (metrics, traces, logs), each with its own chain of receivers → processors → exporters
+
+> **Why the contrib image?**
+> The standard `otel/opentelemetry-collector` ships only the core built-in components. We will use the
+> [`otel/opentelemetry-collector-contrib`](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+> image, which bundles all community-contributed components. This is required for Kubernetes-specific
+> receivers and processors like `k8sclusterreceiver` and `k8sattributesprocessor`, as well as exporters
+> for backends like VictoriaMetrics.
 
 ### Presets
-We will be using some presets to help:
-* Explain the concept of presets: https://opentelemetry.io/docs/platforms/kubernetes/helm/collector/#presets
-* Explain the first preset we will be using:
+
+[Presets](https://opentelemetry.io/docs/platforms/kubernetes/helm/collector/#presets) are pre-packaged
+configurations built into the OTel collector helm chart that handle the complex setup of common
+components for you. They are a good starting point. If you need further customization, you can
+always override them with manual configuration.
+
+We will enable two presets in our first step:
+
+* **`clusterMetrics`**: adds the `k8sclusterreceiver` to the metrics pipeline. It collects
+  cluster-level metrics directly from the Kubernetes API server (similar to what Kube State Metrics
+  provides). Works best with `mode: deployment` and a single replica, since multiple instances would
+  produce duplicate data.
+
+* **`kubernetesAttributes`**: adds the `k8sattributesprocessor` to every enabled pipeline. It
+  enriches all telemetry (metrics, traces, and logs) with Kubernetes metadata such as pod names,
+  namespace names, and node identifiers. It requires RBAC permissions (the chart handles this
+  automatically) and is highly recommended for any Kubernetes deployment.
 
 ### Installing the collector
 First, we will create a namespace:

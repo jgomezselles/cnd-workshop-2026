@@ -1,3 +1,4 @@
+{{- if .Values.serverMock.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,3 +31,4 @@ spec:
             {{- toYaml .Values.serverMock.resources | nindent 12 }}
           env:
             {{- toYaml .Values.serverMock.env | nindent 12 }}
+{{- end }}

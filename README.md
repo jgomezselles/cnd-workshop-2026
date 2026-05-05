@@ -38,15 +38,34 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
 # Part I
 
 ## OpenTelemetry intro
-TBD
+[OpenTelemetry](https://opentelemetry.io/) is a collection of **APIs**, **SDKs**, and **tools**. Use it to
+instrument, generate, collect, and export telemetry data (metrics, logs, and traces) to help you
+analyze your software’s performance and behavior.
+
+> **NOTE**: OpenTelemetry is NOT (and does not provide):
+> * A visualization tool
+> * Ways of storing signals (databases)
+
+### Main concepts
+* Auto-instrumentation
+* Collector
+* Standard/Specification
+* Libraries for all languages
 
 ## OpenTelemetry collector intro
-TBD
+One of this tools is the [OpenTelemetry collector](https://opentelemetry.io/docs/collector/), which
+provides a vendor-agnostic implementation that:
+* allows to receive, process and export telemetry data
+* removes the need to run, operate, and maintain multiple agents/collectors
+* allows sending data to one or more open source or commercial backends.
 
 ## Install OpenTelemetry collector
 TBD
 
 ## Watch metrics in Cloud
+TBD
+
+## Manual instrumentation
 TBD
 
 ## Deploy demo app

@@ -167,8 +167,38 @@ We can observe (taken from the docs):
 > By inspecting the [PipelineZ](http://localhost:55679/debug/pipelinez), we can see that our
 > metrics pipeline has been automatically modified.
 
-## Watch metrics in Cloud
-TBD
+## Forwarding metrics to a remote backend
+
+As mentioned previously, OpenTelemetry does not provide backends nor visualization tooling.
+In this section, we will demonstrate how easy it is with OpenTelemetry to send metrics to a remote
+storage.
+
+### VictoriaMetrics Cloud setup
+
+In this example, we will be sending the telemetry to VictoriaMetrics Cloud, but any remote
+backend should work very similarly. For that, we need to log in into our organization. We created
+one for this workshop: `CND-Romania` with a running VictoriaMetrics cluster.
+
+First, you will be invited an organization. Upon invitation, you will receive an email like this:
+
+![Email Invitation](pics/invite_email.png)
+
+After accepting the invitation and setting a password, you'll be all set to start sending data!
+In order to do that, we need a URL and a token. Navigate to the deployment `Access Tokens` page,
+by clicking on the 3 dots of your deployment:
+
+![Email Invitation](pics/tokens_1.png)
+
+Copy and note down (see next image):
+1. the token assigned to your tenant
+2. the endpoint of our VictoriaMetrics Cluster instance
+
+![Email Invitation](pics/tokens_2.png)
+
+> Now we have all set up to start sending metrics
+
+### Configuring the OTel collector to forward metrics
+
 
 ## Manual instrumentation
 TBD

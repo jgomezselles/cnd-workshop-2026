@@ -1,0 +1,22 @@
+opentelemetry-collector:
+  alternateConfig:
+    extensions:
+      bearertokenauth/cloud-tenant:
+        scheme: "Bearer"
+        token: #ADD TOKEN HERE
+
+    exporters:
+      otlphttp/cloud-metrics:
+        compression: gzip
+        encoding: proto
+        endpoint: #ADD URL HERE https://XXXXX.cloud.victoriametrics.com/opentelemetry
+        auth:
+          authenticator: bearertokenauth/cloud-tenant
+
+    service:
+      extensions: [health_check, zpages, bearertokenauth/cloud-tenant]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug, otlphttp/cloud-metrics]

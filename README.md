@@ -114,8 +114,8 @@ This dumps all available options with their defaults. The key sections to unders
 > The standard `otel/opentelemetry-collector` ships only the core built-in components. We will use the
 > [`otel/opentelemetry-collector-contrib`](https://github.com/open-telemetry/opentelemetry-collector-contrib)
 > image, which bundles all community-contributed components. This is required for Kubernetes-specific
-> receivers and processors like `k8sclusterreceiver` and `k8sattributesprocessor`, as well as exporters
-> for backends like VictoriaMetrics.
+> receivers and processors like `k8sclusterreceiver`, `kubeletMetrics` and `k8sattributesprocessor`, as well
+> as exporters for backends like VictoriaMetrics.
 
 ### Presets
 
@@ -128,13 +128,20 @@ We will enable two presets in our first step:
 
 * **`clusterMetrics`**: adds the `k8sclusterreceiver` to the metrics pipeline. It collects
   cluster-level metrics directly from the Kubernetes API server (similar to what Kube State Metrics
-  provides). Works best with `mode: deployment` and a single replica, since multiple instances would
-  produce duplicate data.
+  provides).
+
+* **`kubeletMetrics`**: adds the `kubeletstatsreceiver` to the metrics pipeline. It pulls node, pod,
+container, and volume metrics from the API server on a kubelet and sends it down the metric pipeline
+for further processing. It will help us to understand **resource usage**.
 
 * **`kubernetesAttributes`**: adds the `k8sattributesprocessor` to every enabled pipeline. It
   enriches all telemetry (metrics, traces, and logs) with Kubernetes metadata such as pod names,
   namespace names, and node identifiers. It requires RBAC permissions (the chart handles this
   automatically) and is highly recommended for any Kubernetes deployment.
+
+> If using `mode: deployment`, it's recommended and a single replica, since multiple
+> instances would produce duplicate data. In general, a `DaemonSet` is recommended. In this example,
+> we will use deployment for simplicity.
 
 ### Installing the collector
 First, we will create a namespace:
@@ -198,6 +205,77 @@ Copy and note down (see next image):
 > Now we have all set up to start sending metrics
 
 ### Configuring the OTel collector to forward metrics
+
+We will now update our collector to send metrics to our deployment.
+We need to add our `endpoint` and `token` into the new yaml with modifications
+file [step-2.yaml](helm/values/step-2.yaml), in the fields `token` and `endpoint`.
+
+```yaml
+opentelemetry-collector:
+  alternateConfig:
+    extensions:
+      bearertokenauth/cloud-tenant:
+        scheme: "Bearer"
+        token: #ADD TOKEN HERE
+
+    exporters:
+      otlphttp/cloud-metrics:
+        compression: gzip
+        encoding: proto
+        endpoint: #ADD URL HERE https://XXXXX.cloud.victoriametrics.com/opentelemetry
+        auth:
+          authenticator: bearertokenauth/cloud-tenant
+
+    service:
+      extensions: [health_check, zpages, bearertokenauth/cloud-tenant]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug, otlphttp/cloud-metrics]
+```
+
+In this case, we are:
+1. Adding the `bearertokenauth` extension and giving it a name: `cloud-tenant`
+2. Adding an OTLP `exporter`, and attaching this `extension`
+3. Adding both components to the `pipeline`
+
+Once this is configured, we just need to upgrade our deployment by:
+
+```sh
+helm upgrade ws helm/cnd-demo -f helm/values/step-1.yaml -f helm/values/step-2.yaml -n cnd-ws
+```
+> NOTE: We could be using `--reuse-values` instead of using both value files. But in this
+> way we ensure that steps are reproducible.
+
+We can also test if the changes were applied by inspecting the **`PipelineZ`** page:
+http://localhost:55679/debug/pipelinez
+
+As you can see, all receivers and exporters are stacked together, and run in order:
+
+![Tenant Selection](pics/pipelinez.png)
+
+### Our first queries
+
+Go to Explore
+
+Make sure to use tenant:
+
+![Tenant Selection](pics/tenant_selection.png)
+
+Queries:
+Doc: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/receiver/kubeletstatsreceiver/documentation.md#containercpuusage
+
+container.cpu.usage:
+* Total CPU usage (sum of all cores per second) averaged over the sample window
+* CPUs
+
+container.memory.usage
+* Container memory usage
+* By
+
+k8s.pod.cpu.usage{k8s.deployment.name="otelcol"}
+k8s.pod.memory.usage{k8s.deployment.name="otelcol"} * 1.0e-6
 
 
 ## Manual instrumentation

@@ -149,7 +149,11 @@ First, we will create a namespace:
 kubectl create ns cnd-ws
 ```
 
-* install the collector with step-1.yaml like "helm install ws helm/cnd-demo -f helm/values/step-1.yaml -n cnd-ws"
+After that, we will install the collector with step-1.yaml like:
+
+```sh
+helm install ws helm/cnd-demo -f helm/values/step-1.yaml -n cnd-ws
+```
 
 ### First approach debugging the collector
 
@@ -170,7 +174,7 @@ We can observe (taken from the docs):
 | **TraceZ**| Available to examine and bucketize spans by latency buckets | http://localhost:55679/debug/tracez |
 | **ExpvarZ** | Useful information about Go runtime | http://localhost:55679/debug/expvarz |
 
-> Now, what did these presets we enabled actually do?
+> **EXERCISE**: Now, what did these presets we enabled actually do?
 > By inspecting the [PipelineZ](http://localhost:55679/debug/pipelinez), we can see that our
 > metrics pipeline has been automatically modified.
 
@@ -255,28 +259,59 @@ As you can see, all receivers and exporters are stacked together, and run in ord
 
 ![Tenant Selection](pics/pipelinez.png)
 
-### Our first queries
+### Exploring our metrics
 
-Go to Explore
+The VictoriaMetrics UI (or `vmui`) is installed with VictoriaMetrics (you can check a playground
+[here](https://play.victoriametrics.com/)). In the Cloud version, `vmui` is available via
+[`Explore`](https://docs.victoriametrics.com/victoriametrics-cloud/exploring-data/exploring-victoriametrics/),
+and accessible in https://console.victoriametrics.cloud/explore/.
 
-Make sure to use tenant:
+Since we are using tenants, we need to _tell_ the tool to use our tenant. Tenant selection is
+available as shown in the picture:
 
 ![Tenant Selection](pics/tenant_selection.png)
 
-Queries:
-Doc: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/v0.127.0/receiver/kubeletstatsreceiver/documentation.md#containercpuusage
+> **EXERCISE**: First, let's explore cardinality of our metrics and identify:
+> * Metrics formatting and how they are different from prometheus
+> * Cardinality: the number of series per metric
+> * Request count and age
 
-container.cpu.usage:
-* Total CPU usage (sum of all cores per second) averaged over the sample window
-* CPUs
+### Our first queries
 
-container.memory.usage
-* Container memory usage
-* By
+If you're curious about which metrics are included by our collector, let's inspect the
+[kubeletstatsreceiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/receiver/kubeletstatsreceiver/documentation.md)
 
+We can check CPU and Memory usage of our OpenTelemetry Collector Pod in different ways.
+For example:
+
+| Metric | Units | Description |
+|--------|-------|-------------|
+| `k8s.pod.cpu.usage` | CPUs | Total CPU usage (sum of all cores per second) averaged over the sample window
+| `k8s.pod.memory.usage` | By | Pod memory usage |
+| `k8s.container.memory.available` | By | Pod memory available |
+
+If we navigate to the `Query` tool, we can check the cpu usage of our OpenTelemetry Collector Pod
+by running:
+```sh
 k8s.pod.cpu.usage{k8s.deployment.name="otelcol"}
-k8s.pod.memory.usage{k8s.deployment.name="otelcol"} * 1.0e-6
+```
+If we want to check Memory usage (in Mb) we should run:
 
+```sh
+k8s.pod.memory.usage{k8s.deployment.name="otelcol"} * 1.0e-6
+```
+
+> **EXERCISE**: Our OpenTelemetry Collector doesn't have limits set, so we cannot compare it
+> against the `available memory`. Let's try to find if we have other pods with limits. In my case,
+> the `coredns` pod has them. Do you have any?
+
+I can check my memory usage percentage by:
+```sh
+ k8s.pod.memory.usage{k8s.deployment.name="coredns"} / sum(k8s.container.memory_limit{k8s.deployment.name="coredns"}) * 100
+ ```
+
+> **EXERCISE**: Feel free to use the `Autocomplete` functionality or navigate back to the `Cardinality explorer`
+> to discover more metrics available!
 
 ## Manual instrumentation
 TBD

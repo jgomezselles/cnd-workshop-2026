@@ -1,11 +1,13 @@
 opentelemetry-collector:
   enabled: true
   fullnameOverride: "otelcol"
-  mode: deployment
+  mode: deployment # simplified for this example, but DaemonSet would be better for host metrics
   image:
     repository: "otel/opentelemetry-collector-contrib"
   presets:
     clusterMetrics:
+      enabled: true
+    kubeletMetrics:
       enabled: true
     kubernetesAttributes:
       enabled: true

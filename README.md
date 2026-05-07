@@ -364,7 +364,88 @@ is therefore the only way to generate the application metrics we care about: we 
 calls directly in the source code to define and record the signals we want to observe.
 
 ## Deploy demo app
-TBD
+
+We will now enable a load generator [hermes](https://github.com/jgomezselles/hermes), which is
+manually instrumented with OpenTelemetry. If you're curious about how, you can check the
+[`olly`](https://github.com/jgomezselles/hermes/tree/main/src/o11y) folder  or how instruments
+are created in the [`stats`](https://github.com/jgomezselles/hermes/blob/main/src/stats/stats.cpp) file.
+
+In order to install it, we will apply now the following changes via the file [step-3.yaml](helm/values/step-3.yaml):
+
+### Application
+
+Important to note how we are routing telemetry to our OTel collector:
+
+```yaml
+hermes:
+...
+  script:
+    cm: traffic-script-cm # traffic script with instructions
+  o11y: # these are converted to env variables and captured by the app
+    metrics_endpoint: http://otelcol:4318/v1/metrics
+    traces_endpoint: http://otelcol:4318/v1/traces
+```
+
+### Server Mock
+
+Written in go, it just logs and responds. Env variables are used:
+```yaml
+serverMock:
+...
+  env: # these are used by the go runtime
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: "http/protobuf"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4318"
+```
+
+### OTel collector
+
+Our apps will be sending logs and traces too. Note that:
+
+1. We don't need to create a new receiver. The same `otlpreceiver` is used for all signals.
+2. These new pipelines will just log, via the `debugexporter` the new logs and traces.
+
+```yaml
+opentelemetry-collector:
+  alternateConfig:
+    service:
+      pipelines: # We are adding 2 pipelines
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug]
+        logs:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug]
+```
+
+Now we can go ahead and upgrade with these changes:
+
+```sh
+helm upgrade ws helm/cnd-demo -f helm/values/step-1.yaml -f helm/values/step-2.yaml -f helm/values/step-3.yaml -n cnd-ws
+```
+
+In order to check if changes were correctly applied, we can
+run again the port-forward and see the **`PipelineZ`** utility to see the pipelines:
+```sh
+kubectl port-forward -n cnd-ws deployments/otelcol 55679:55679
+```
+
+> **EXERCISE**: Inspect the pipeline and OTel collector logs
+
+## Running the app
+
+Let's run traffic in the background in a new console by:
+```sh
+kubectl exec -n cnd-ws $(kubectl get pod -n cnd-ws -l app.kubernetes.io/name=hermes -o jsonpath='{.items[0].metadata.name}') -- hermes -r10 -p1 -t1000
+```
+
+This will send requests at a rate `r=10` rps for time `t=100`s (and print to console stderr every `p=1`s).
+
+> **EXERCISE**: Let's use the `Autocomplete` functionality or navigate back to the `Cardinality explorer`
+> to discover which new metrics we have, and how the kubelet is exposing more containers now.
 
 ## Integrate with Grafana (With backup dashboard)
 TBD

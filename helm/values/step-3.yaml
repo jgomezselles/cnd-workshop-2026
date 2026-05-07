@@ -1,0 +1,42 @@
+serverMock:
+  enabled: true
+  name: server-mock
+  replicaCount: 1
+  image:
+    repository: ghcr.io/jgomezselles/server-mock-otel
+    pullPolicy: IfNotPresent
+    tag: 0.0.1
+  service:
+    type: ClusterIP
+    port: 8080
+  resources: {}
+  env:
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: "http/protobuf"
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: "http://otelcol:4318"
+
+hermes:
+  enabled: true
+  script:
+    cm: traffic-script-cm
+  image:
+    repository: ghcr.io/jgomezselles/hermes
+    tag: 0.0.7
+    pullPolicy: IfNotPresent
+  o11y:
+    metrics_endpoint: http://otelcol:4318/v1/metrics
+    traces_endpoint: http://otelcol:4318/v1/traces
+
+opentelemetry-collector:
+  alternateConfig:
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug]
+        logs:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug]

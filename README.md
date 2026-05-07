@@ -161,7 +161,7 @@ We can observe (taken from the docs):
 | **ExtensionZ**| Shows the extensions that are active in the collector.|  http://localhost:55679/debug/extensionz |
 | **FeatureZ** | Lists the feature gates available along with their current status and description. | http://localhost:55679/debug/featurez |
 | **TraceZ**| Available to examine and bucketize spans by latency buckets | http://localhost:55679/debug/tracez |
-| ExpvarZ | Useful information about Go runtime | http://localhost:55679/debug/expvarz |
+| **ExpvarZ** | Useful information about Go runtime | http://localhost:55679/debug/expvarz |
 
 > Now, what did these presets we enabled actually do?
 > By inspecting the [PipelineZ](http://localhost:55679/debug/pipelinez), we can see that our

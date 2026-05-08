@@ -38,9 +38,11 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
 # Requirements
 
 ## Tooling
-* docker
-* small k8s distro: minikube, kind or similar
-* helm
+* Docker (tested on versions:  Client - 28.2.2 , Server 29.4.0)
+* Docker compose (tested on version v2.13.0)
+* Small k8s distro: minikube, kind or similar
+* kubectl: (tested on version: v1.33.1)
+* Helm: (tested on version: v3.18.1)
 
 # Part I
 

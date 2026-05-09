@@ -1,0 +1,32 @@
+opentelemetry-collector:
+  presets:
+    kubernetesEvents:
+      enabled: true
+    logsCollection:
+      enabled: true
+  alternateConfig:
+    extensions:
+      bearertokenauth/cloud-logs:
+        scheme: "Bearer"
+        token: #ADD TOKEN HERE
+
+    exporters:
+      otlphttp/cloud-logs:
+        compression: gzip
+        encoding: proto
+        logs_endpoint: #ADD URL HERE https://XXXXX.cloud.victoriametrics.com/insert/opentelemetry/v1/logs
+        headers:
+          VL-Msg-Field: object.note
+          VL-Stream-Fields: object.regarding.fieldPath,k8s.container.name
+          AccountID: "" #ADD Tenant AccountID here
+          ProjectID: "" #ADD Project AccountID here
+        auth:
+          authenticator: bearertokenauth/cloud-logs
+
+    service:
+      extensions: [health_check, zpages, bearertokenauth/cloud-tenant, bearertokenauth/cloud-logs]
+      pipelines:
+        logs:
+          receivers: [otlp]
+          processors: []
+          exporters: [debug, otlphttp/cloud-logs]

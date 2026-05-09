@@ -1,0 +1,6 @@
+grafana:
+  enabled: true
+  adminPassword: admin
+  plugins:
+    - victoriametrics-metrics-datasource
+    - victoriametrics-logs-datasource

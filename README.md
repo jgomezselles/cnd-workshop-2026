@@ -560,9 +560,42 @@ to perform operations.
 > **EXERCISE**: Knowing that the `count()`stats operations exists. Could you tell how many PUT operations
 > occurred during the last 10 seconds?
 
+## Building dashboards in Grafana
 
-## Integrate with Grafana (With backup dashboard)
-TBD
+```yaml
+grafana:
+  enabled: true
+  adminPassword: admin
+  plugins:
+    - victoriametrics-metrics-datasource
+    - victoriametrics-logs-datasource
+```
+
+```sh
+helm upgrade ws helm/cnd-demo -f helm/values/step-1.yaml -f helm/values/step-2.yaml -f helm/values/step-3.yaml -f helm/values/step-4.yaml  -f helm/values/step-5.yaml -n cnd-ws
+```
+
+```sh
+kubectl port-forward -n cnd-ws deployments/ws-grafana 3000:3000
+```
+
+https://docs.victoriametrics.com/victoriametrics-cloud/integrations/grafana/
+
+
+Response time graph
+```sh
+hermes_response_time_ok_ms_sum{id=~"$request_id"}[1m] / hermes_response_time_ok_ms_count{id=~"$request_id"}[1m]
+```
+
+Avg Response time value
+```sh
+avg(hermes_response_time_ok_ms_sum{id=~"$request_id"}[1m] / hermes_response_time_ok_ms_count{id=~"$request_id"}[1m])
+```
+
+Gauge
+```sh
+sum(hermes_responses_rcv_ok{id=~"$request_id"}) / sum(hermes_requests_sent{id=~"$request_id"}) *100
+```
 
 ## Integrate logs with Grafana
 TBD

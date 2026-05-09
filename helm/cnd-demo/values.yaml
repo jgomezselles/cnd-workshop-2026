@@ -92,33 +92,6 @@ grafana:
   plugins:
     - victoriametrics-metrics-datasource
     - victoriametrics-logs-datasource
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-      - name: Prometheus
-        type: prometheus
-        url: http://vm-svc:8428
-        access: proxy
-        isDefault: false
-        uid: hermes-prometheus-datasource
-      # <string, required> Name of the VictoriaMetrics datasource
-      # displayed in Grafana panels and queries.
-      - name: VictoriaMetrics
-        type: victoriametrics-metrics-datasource
-        access: proxy
-        url: http://vm-svc:8428
-        isDefault: true
-      - name: VictoriaLogs
-        type: victoriametrics-logs-datasource
-        access: proxy
-        url: http://vl-svc:9428
-      - name: VictoriaTraces
-        type: jaeger
-        access: proxy
-        url: http://vt-svc:10428/select/jaeger
-      deleteDatasources:
-      - name: Prometheus
 
   dashboardProviders:
    dashboardproviders.yaml:

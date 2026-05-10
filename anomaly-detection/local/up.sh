@@ -5,20 +5,24 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
 RUN_DATALOADER="${RUN_DATALOADER:-1}"
+STOP_OTHER_STACK="${STOP_OTHER_STACK:-0}"
 
 usage() {
   cat <<'EOF'
-Usage: ./up.sh [--with-dataloader|--skip-dataloader] [--reset-volumes|--keep-volumes]
+Usage: ./up.sh [--with-dataloader|--skip-dataloader] [--reset-volumes|--keep-volumes] [--stop-other-stack|--keep-other-stack]
 
 Defaults:
   - run the one-shot dataloader;
   - reset Docker volumes, so local development starts from a reproducible dataset.
+  - keep the Cloud compose stack running; Cloud uses a separate host port range.
 
 Options:
   --with-dataloader  Run the seed profile once before starting vmanomaly.
   --skip-dataloader  Reuse an already seeded dataset and start vmanomaly only.
   --reset-volumes    Remove Docker volumes before startup.
   --keep-volumes     Keep Docker volumes before startup.
+  --stop-other-stack  Stop the Cloud compose stack before startup anyway.
+  --keep-other-stack  Do not stop the Cloud compose stack.
 EOF
 }
 
@@ -38,6 +42,15 @@ wait_http() {
   done
 }
 
+stop_other_stack() {
+  if [[ "${STOP_OTHER_STACK}" != "1" ]]; then
+    return
+  fi
+
+  echo "Stopping cloud stack first to free shared demo ports..."
+  docker compose -f ../cloud/docker-compose.yml --project-directory ../cloud down --remove-orphans
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --with-dataloader|--seed)
@@ -51,6 +64,12 @@ while [[ $# -gt 0 ]]; do
       ;;
     --keep-volumes)
       RESET_VOLUMES=0
+      ;;
+    --stop-other-stack)
+      STOP_OTHER_STACK=1
+      ;;
+    --keep-other-stack)
+      STOP_OTHER_STACK=0
       ;;
     -h|--help)
       usage
@@ -71,6 +90,7 @@ if [[ ! -s ../.secret/license ]]; then
 fi
 
 source ./env.sh
+stop_other_stack
 
 if [[ -z "${RESET_VOLUMES+x}" ]]; then
   if [[ "${RUN_DATALOADER}" == "1" ]]; then

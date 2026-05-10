@@ -3,134 +3,206 @@ datasource_url: "http://victoriametrics:8428/"
 # Labels use Prometheus-normalized OpenTelemetry semantic attributes.
 # Example: OTel `service.name` becomes Prometheus label `service_name`.
 # Keep labels low-cardinality for the demo; add noisy dimensions later only
-# when the demo explicitly needs cardinality or correlation examples.
+# when the workshop explicitly needs cardinality or correlation examples.
+x-checkout-labels: &checkout_labels
+  service_namespace: "shop"
+  service_name: "checkout-api"
+  service_version: "1.18.0"
+  deployment_environment_name: "production"
+  k8s_cluster_name: "prod-eu-1"
+  k8s_namespace_name: "shop-prod"
+  cloud_region: "eu-central-1"
+  business_flow: "checkout"
+
+x-checkout-instances: &checkout_instances
+  instance: ["checkout-api-0", "checkout-api-1", "checkout-api-2"]
+
+x-historical_length: &historical_length "21D"
+x-future_length: &future_length "2D"
 
 series:
   # Checkout API p95 latency, already aggregated from an OTel histogram.
-  # Unit/type are encoded by convention in the metric name:
-  # *_seconds_p95 is a latency gauge in seconds.
-  # Business intuition: users can buy, but the checkout path is getting slow.
+  # Business intuition: users can buy, but the checkout path gets slow for
+  # different instances at different points in the replay.
   - series_name: "apm_http_server_request_duration_seconds_p95"
-    labels:
-      service_namespace: "shop"
-      service_name: "checkout-api"
-      service_version: "1.18.0"
-      deployment_environment_name: "production"
-      k8s_cluster_name: "prod-eu-1"
-      k8s_namespace_name: "shop-prod"
-      cloud_region: "eu-central-1"
-      http_route: "/checkout"
-      http_request_method: "POST"
-      business_flow: "checkout"
-    series_labels:
-      - instance: "checkout-api-0"
-        service_instance_id: "checkout-api-0"
-        synthetic_series_id: "checkout-api-0"
-        k8s_pod_name: "checkout-api-7c9df6b57d-0"
-      - instance: "checkout-api-1"
-        service_instance_id: "checkout-api-1"
-        synthetic_series_id: "checkout-api-1"
-        k8s_pod_name: "checkout-api-7c9df6b57d-1"
-      - instance: "checkout-api-2"
-        service_instance_id: "checkout-api-2"
-        synthetic_series_id: "checkout-api-2"
-        k8s_pod_name: "checkout-api-7c9df6b57d-2"
-    seasonal: true
-    seasonality_type: flat
     n_series: 3
     freq: "30s"
-    historical_length: "21D"
-    future_length: "2D"
-    scale: 0.28
-    data_range: [0.01, 8]
-    seasonal_anomalies: true
-    anomaly_percentage: 0.003
-    anomaly_changepoint: true
-    changepoint_magnitude: 2.3
-    changepoint_position: 0.90
+    historical_length: *historical_length
+    future_length: *future_length
     cumulative: false
+    # Seconds. Latencies are positive and intentionally capped so workshop
+    # graphs stay readable even during severe incidents.
+    value_range: [0.01, 8]
     random_state: 1101
+    labels:
+      <<: [*checkout_labels, *checkout_instances]
+      http_route: "/checkout"
+      http_request_method: "POST"
+    signal:
+      base: 1
+      scale: [0.24, 0.28, 0.31]
+      seasonalities:
+        - type: "weekly_workload"
+          weekday: 1.0
+          weekend: 0.72
+        - type: "sinusoid_sum"
+          min: 0.30
+          waves:
+            - period_hours: 24
+              amplitude: 0.23
+              phase_hours: [9, 10, 8]
+            - period_hours: 12
+              amplitude: 0.09
+              phase_hours: [2, 3, 1]
+            - period_hours: 8
+              amplitude: 0.04
+              phase_hours: [0, 1, 2]
+      noise:
+        type: "normal"
+        mode: "multiply"
+        stddev: [0.025, 0.030, 0.028]
+    anomalies:
+      - name: "latency_minor_historical_blips"
+        type: "contextual"
+        placement: "random"
+        window: "history"
+        occurrences: [10, 8, 9]
+        duration: "2m"
+        factor: [1.35, 1.30, 1.40]
+      - name: "latency_contextual_incident"
+        type: "contextual"
+        starts: ["1h", "30m", "-5m"]
+        duration: ["30m", "10m", "20m"]
+        factor: [2.8, 2.2, 2.5]
+      - name: "latency_changepoint_instance_2"
+        type: "changepoint"
+        series: 2
+        start: "3h"
+        duration: "forever"
+        factor: 1.65
 
   # Checkout request volume, represented as a Prometheus counter.
-  # *_count_total follows the Prometheus counter naming convention.
-  # Business intuition: strong daily/weekly seasonality and a future traffic drop.
+  # Business intuition: traffic has strong daily/weekly shape, then one
+  # instance slowly loses traffic while another has a short off-season drop.
   - series_name: "apm_http_server_request_count_total"
-    labels:
-      service_namespace: "shop"
-      service_name: "checkout-api"
-      service_version: "1.18.0"
-      deployment_environment_name: "production"
-      k8s_cluster_name: "prod-eu-1"
-      k8s_namespace_name: "shop-prod"
-      cloud_region: "eu-central-1"
-      http_route: "/checkout"
-      http_request_method: "POST"
-      business_flow: "checkout"
-    series_labels:
-      - instance: "checkout-api-0"
-        service_instance_id: "checkout-api-0"
-        synthetic_series_id: "checkout-api-0"
-        k8s_pod_name: "checkout-api-7c9df6b57d-0"
-      - instance: "checkout-api-1"
-        service_instance_id: "checkout-api-1"
-        synthetic_series_id: "checkout-api-1"
-        k8s_pod_name: "checkout-api-7c9df6b57d-1"
-      - instance: "checkout-api-2"
-        service_instance_id: "checkout-api-2"
-        synthetic_series_id: "checkout-api-2"
-        k8s_pod_name: "checkout-api-7c9df6b57d-2"
-    seasonal: true
-    seasonality_type: sinusoidal
     n_series: 3
     freq: "30s"
-    historical_length: "21D"
-    future_length: "2D"
-    scale: 850
-    data_range: [0, "inf"]
-    seasonal_anomalies: true
-    anomaly_percentage: 0.002
+    historical_length: *historical_length
+    future_length: *future_length
     cumulative: true
+    # Per-30s request increments before cumulative conversion. The resulting
+    # *_total counter is monotonic and unbounded.
+    value_range: [0, "inf"]
     random_state: 2202
+    labels:
+      <<: [*checkout_labels, *checkout_instances]
+      http_route: "/checkout"
+      http_request_method: "POST"
+    signal:
+      base: 1
+      scale: [16, 18, 15]
+      seasonalities:
+        - type: "weekly_workload"
+          weekday: 1.0
+          weekend: 0.62
+        - type: "sinusoid_sum"
+          min: 0.25
+          waves:
+            - period_hours: 24
+              amplitude: 0.34
+              phase_hours: [13, 13, 12]
+            - period_hours: 12
+              amplitude: 0.15
+              phase_hours: [3, 2, 4]
+            - period_hours: 8
+              amplitude: 0.06
+              phase_hours: [1, 2, 0]
+      noise:
+        type: "normal"
+        mode: "multiply"
+        stddev: 0.04
+    anomalies:
+      - name: "traffic_minor_historical_dips"
+        type: "contextual"
+        placement: "random"
+        window: "history"
+        occurrences: [6, 7, 6]
+        duration: "3m"
+        direction: "drop"
+        factor: 1.45
+      - name: "traffic_slow_decay_instance_1"
+        type: "slow_trend"
+        series: 1
+        start: "3h"
+        duration: "2h"
+        direction: "drop"
+        from_factor: 1.0
+        to_factor: 2.2
+      - name: "traffic_contextual_drop_instance_0"
+        type: "contextual"
+        series: 0
+        start: "15m"
+        duration: "30m"
+        direction: "drop"
+        factor: 3.0
 
   # Payment dependency error ratio, kept as a simple bounded gauge.
-  # Ratio semantics are carried by the metric name and bounded data_range.
-  # Business intuition: payment failures are rare, so spikes are easy to explain.
+  # Business intuition: payment errors are normally rare, so spikes and
+  # creeping degradation are easy to explain from a business perspective.
   - series_name: "apm_rpc_client_error_ratio"
+    n_series: 3
+    freq: "30s"
+    historical_length: *historical_length
+    future_length: *future_length
+    cumulative: false
+    # Ratio in normalized [0, 1] form. If this becomes a percent metric later,
+    # use [0, 100] and adjust scale/anomaly factors accordingly.
+    value_range: [0, 1]
+    random_state: 3303
     labels:
-      service_namespace: "shop"
-      service_name: "checkout-api"
-      service_version: "1.18.0"
-      deployment_environment_name: "production"
-      k8s_cluster_name: "prod-eu-1"
-      k8s_namespace_name: "shop-prod"
-      cloud_region: "eu-central-1"
+      <<: [*checkout_labels, *checkout_instances]
       rpc_system: "grpc"
       rpc_service: "payments.PaymentService"
       rpc_method: "Authorize"
       peer_service: "payment-service"
-      business_flow: "checkout"
-    series_labels:
-      - instance: "checkout-api-0"
-        service_instance_id: "checkout-api-0"
-        synthetic_series_id: "checkout-api-0"
-        k8s_pod_name: "checkout-api-7c9df6b57d-0"
-      - instance: "checkout-api-1"
-        service_instance_id: "checkout-api-1"
-        synthetic_series_id: "checkout-api-1"
-        k8s_pod_name: "checkout-api-7c9df6b57d-1"
-      - instance: "checkout-api-2"
-        service_instance_id: "checkout-api-2"
-        synthetic_series_id: "checkout-api-2"
-        k8s_pod_name: "checkout-api-7c9df6b57d-2"
-    seasonal: false
-    n_series: 3
-    freq: "30s"
-    historical_length: "21D"
-    future_length: "2D"
-    scale: 0.018
-    data_range: [0, 1]
-    simple_anomaly: true
-    simple_magnitude: 9
-    anomaly_percentage: 0.002
-    cumulative: false
-    random_state: 3303
+    signal:
+      base: 1
+      scale: [0.008, 0.010, 0.007]
+      seasonalities:
+        - type: "weekly_workload"
+          weekday: 1.0
+          weekend: 0.80
+        - type: "sinusoid_sum"
+          min: 0.45
+          waves:
+            - period_hours: 24
+              amplitude: 0.10
+              phase_hours: [12, 14, 11]
+            - period_hours: 12
+              amplitude: 0.04
+              phase_hours: [1, 3, 2]
+      noise:
+        type: "normal"
+        mode: "multiply"
+        stddev: 0.08
+    anomalies:
+      - name: "payment_error_minor_historical_spikes"
+        type: "contextual"
+        placement: "random"
+        window: "history"
+        occurrences: [8, 9, 7]
+        duration: "90s"
+        factor: [2.0, 2.2, 1.8]
+      - name: "payment_error_spikes"
+        type: "contextual"
+        starts: ["4h", "45m", "-10m"]
+        duration: ["30m", "20m", "30m"]
+        factor: [8, 12, 10]
+      - name: "payment_error_slow_trend_instance_1"
+        type: "slow_trend"
+        series: 1
+        start: "30m"
+        duration: "4h"
+        direction: "spike"
+        from_factor: 1.0
+        to_factor: 5.0

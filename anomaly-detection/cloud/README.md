@@ -6,6 +6,8 @@ buffers, rate-limits, relabels, and forwards samples to Cloud.
 
 Cloud mode also starts Alertmanager and the local webhook inbox, so alert
 notifications can be inspected without Slack, email, or external credentials.
+> **Note:** Cloud host ports are offset from local mode, so both stacks can run side by
+side on one machine.
 
 ```mermaid
 flowchart LR
@@ -82,12 +84,12 @@ Keep local Grafana/vmanomaly/vmagent volumes:
 
 Open:
 
-- Grafana: http://localhost:3000
-- vmanomaly UI: http://localhost:8490
-- vmagent: http://localhost:8429
-- vmalert: http://localhost:8880
-- Alertmanager: http://localhost:9093
-- Alert webhook inbox: http://localhost:5001
+- Grafana: http://localhost:13000
+- vmanomaly UI: http://localhost:18490
+- vmagent: http://localhost:18429
+- vmalert: http://localhost:18880
+- Alertmanager: http://localhost:19093
+- Alert webhook inbox: http://localhost:15001
 
 Useful logs:
 

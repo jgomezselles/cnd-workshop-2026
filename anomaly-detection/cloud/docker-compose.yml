@@ -14,7 +14,7 @@ services:
     container_name: otel-apm-vmagent-cloud
     image: victoriametrics/vmagent:v1.140.0
     ports:
-      - "8429:8429"
+      - "18429:8429"
     volumes:
       - vmagentdata-cloud:/vmagentdata
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -76,7 +76,7 @@ services:
       vmagent:
         condition: service_started
     ports:
-      - "8490:8490"
+      - "18490:8490"
     environment:
       VM_LICENSE_FILE: /run/secrets/vmanomaly_license
       VM_CLOUD_DATASOURCE_URL: ${VM_CLOUD_DATASOURCE_URL:-}
@@ -119,7 +119,7 @@ services:
       alertmanager:
         condition: service_started
     ports:
-      - "8880:8880"
+      - "18880:8880"
     volumes:
       - ../shared/vmalert_config.yml:/etc/alerts/alerts.yml:ro
       - ../.secret/BEARER_TOKEN_WRITE:/run/secrets/vm_cloud_write_bearer_token:ro
@@ -133,7 +133,7 @@ services:
       - "--notifier.url=http://alertmanager:9093/"
       - "--rule=/etc/alerts/*.yml"
       - "--httpListenAddr=:8880"
-      - "--external.url=http://127.0.0.1:3000"
+      - "--external.url=http://127.0.0.1:13000"
     networks:
       - otel_apm_cloud_net
     restart: unless-stopped
@@ -145,7 +145,7 @@ services:
       alert-webhook:
         condition: service_started
     ports:
-      - "9093:9093"
+      - "19093:9093"
     volumes:
       - ../shared/alertmanager.yml:/config/alertmanager.yml:ro
     command:
@@ -160,7 +160,7 @@ services:
     container_name: otel-apm-alert-webhook-cloud
     image: python:3.13-alpine
     ports:
-      - "5001:5001"
+      - "15001:5001"
     volumes:
       - ../shared/alert_webhook.py:/app/alert_webhook.py:ro
     command:
@@ -174,7 +174,7 @@ services:
     container_name: otel-apm-grafana-cloud
     image: grafana/grafana-oss:12.4.3
     ports:
-      - "3000:3000"
+      - "13000:3000"
     environment:
       GF_INSTALL_PLUGINS: victoriametrics-metrics-datasource
       GF_AUTH_ANONYMOUS_ENABLED: "true"

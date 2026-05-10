@@ -14,19 +14,25 @@ across historical and future timestamps.
 There are two deployment modes:
 
 * **Local mode**: runs VictoriaMetrics, vmagent, vmanomaly, Grafana, vmalert,
-  Alertmanager, and the optional synthetic dataloader on your machine.
-* **Cloud mode**: skips local VictoriaMetrics and writes/reads through a
-  VictoriaMetrics Cloud deployment. vmagent still runs locally to buffer,
-  relabel, and rate-limit ingestion bursts.
+  Alertmanager, and the webhook inbox on your machine. The synthetic
+  dataloader is available through the `seed` profile and runs by default from
+  `local/up.sh`.
+* **Cloud mode**: skips local VictoriaMetrics. vmanomaly and vmalert read from
+  VictoriaMetrics Cloud, while vmanomaly, vmalert, and the optional dataloader
+  write through local vmagent so writes can be buffered, relabeled, and
+  rate-limited. Grafana, Alertmanager, and the webhook inbox still run locally
+  on cloud-specific host ports.
 
 ```mermaid
 flowchart LR
-  shared["shared/<br/>synthetic data<br/>dashboards<br/>relabel rules"]
-  local["local/<br/>VictoriaMetrics<br/>vmanomaly<br/>Grafana<br/>vmalert"]
-  cloud["cloud/<br/>vmagent relay<br/>VictoriaMetrics Cloud<br/>vmanomaly<br/>Grafana"]
+  shared["shared/<br/>dataloader config<br/>dashboards<br/>alert rules<br/>relabel rules"]
+  local["local stack<br/>VictoriaMetrics<br/>vmagent<br/>vmanomaly<br/>Grafana<br/>vmalert<br/>Alertmanager<br/>webhook inbox<br/>optional dataloader"]
+  cloud["cloud stack<br/>vmagent relay<br/>vmanomaly<br/>Grafana<br/>vmalert<br/>Alertmanager<br/>webhook inbox<br/>optional dataloader"]
+  vmcloud["VictoriaMetrics Cloud<br/>external read/write target"]
 
   shared --> local
   shared --> cloud
+  cloud -->|"query + remote write"| vmcloud
 ```
 
 ## Folder structure
@@ -208,6 +214,11 @@ See [local/README.md](./local/README.md) for local-specific notes.
 Cloud mode is useful after metrics were already pushed to VictoriaMetrics Cloud
 or when testing the cloud query/write path.
 
+> **Note:** Cloud uses a different host port range, so local and cloud stacks can run at
+the same time. If you still have cloud containers created before this port
+split, run `cd anomaly-detection/cloud && ./down.sh --keep-volumes` once before
+starting local mode again.
+
 ```sh
 cd anomaly-detection/cloud
 ./up.sh
@@ -224,12 +235,12 @@ expected to already exist in the shared read tenant.
 
 Open:
 
-* Grafana: http://localhost:3000
-* vmanomaly UI: http://localhost:8490
-* vmagent: http://localhost:8429
-* vmalert: http://localhost:8880
-* Alertmanager: http://localhost:9093
-* Alert webhook inbox: http://localhost:5001
+* Grafana: http://localhost:13000
+* vmanomaly UI: http://localhost:18490
+* vmagent: http://localhost:18429
+* vmalert: http://localhost:18880
+* Alertmanager: http://localhost:19093
+* Alert webhook inbox: http://localhost:15001
 
 ## Inspect in Grafana
 
@@ -243,6 +254,144 @@ Once vmanomaly is running, open Grafana and use the provisioned dashboards:
   scheduler/model run times, errors, data reads/writes, and service metrics.
   Full guide:
   https://docs.victoriametrics.com/anomaly-detection/self-monitoring/
+
+## Workshop flow
+
+The anomaly-detection part starts from a synthetic checkout service with three
+instances:
+
+- `checkout-api-0`
+- `checkout-api-1`
+- `checkout-api-2`
+
+The dataset contains normal daily/weekly behavior, small historical blips, and
+larger current or forthcoming incidents. Future samples are already written so
+the workshop can imitate live data without waiting for real incidents.
+
+```mermaid
+flowchart LR
+  loader["synthetic dataloader"] -->|"seed history and near future"| vmagent["vmagent"]
+  anomaly["vmanomaly"] -->|"write y, yhat, bands, anomaly_score"| vmagent
+  vmagent -->|"buffer, relabel, rate-limit"| vm["VictoriaMetrics or Cloud"]
+  vm -->|"read raw APM metrics"| anomaly
+  vm -->|"populate dashboards"| grafana["Grafana"]
+  vm -->|"evaluate anomaly rules"| vmalert["vmalert"]
+  vmalert -->|"notify firing alerts"| alertmanager["Alertmanager"]
+  alertmanager -->|"send grouped JSON"| webhook["webhook inbox"]
+```
+
+Use these query aliases in the anomaly score dashboard:
+
+| Query alias | Business question | Raw metric |
+|-------------|-------------------|------------|
+| `checkout_latency_p95` | Is checkout becoming slow? | `apm_http_server_request_duration_seconds_p95` |
+| `checkout_request_rate` | Is traffic changing unexpectedly? | `rate(apm_http_server_request_count_total[2m])` |
+| `payment_error_ratio` | Are payment failures increasing? | `apm_rpc_client_error_ratio` |
+
+The normal shape is smooth: summed daily, half-daily, and sub-daily sinusoids
+with weekday/weekend modulation and light noise. Historical anomalies are
+shorter and less severe than the main incidents, so models still have mostly
+normal data to learn from.
+
+## Exercises
+
+### 1. Find the slow checkout instance
+
+In Grafana, open the anomaly score dashboard and set:
+
+- `query_key`: `checkout_latency_p95`
+- `groupby`: `instance`
+- time range: recent 6 hours
+
+Questions:
+
+- Which instance has a persistent latency problem?
+- Which instances have shorter contextual latency incidents?
+- Is any latency incident already present in the generated future window?
+
+<details>
+<summary>Hint / answer</summary>
+
+`checkout-api-2` has a persistent latency changepoint around `now()-3h`.
+`checkout-api-0` has a contextual latency incident around `now()-1h`.
+`checkout-api-1` has a shorter contextual latency incident around `now()-30m`.
+One latency incident is placed shortly after `now()`, so it appears as the
+demo time range moves into already-written future samples.
+
+</details>
+
+### 2. Traffic is not just seasonal
+
+Set:
+
+- `query_key`: `checkout_request_rate`
+- `groupby`: `instance`
+- time range: recent 6 hours
+
+Questions:
+
+- Which instance is slowly losing traffic?
+- Which instance has a shorter traffic drop?
+- Why is this different from regular weekday/weekend or intraday seasonality?
+
+<details>
+<summary>Hint / answer</summary>
+
+`checkout-api-1` has a slow traffic decay. It is gradual, so it is more subtle
+than a spike. `checkout-api-0` has a shorter contextual traffic drop. The key
+difference from seasonality is that the drop happens off the learned smooth
+daily/weekly pattern and does not repeat like normal traffic.
+
+</details>
+
+### 3. Payment errors are adding up
+
+Set:
+
+- `query_key`: `payment_error_ratio`
+- `groupby`: `instance`
+- time range: recent 6 hours
+
+Questions:
+
+- Which instance has a slow error-rate buildup?
+- Which spikes are short contextual incidents?
+- Can you see a forthcoming payment error spike?
+
+<details>
+<summary>Hint / answer</summary>
+
+`checkout-api-1` has a slow payment error-rate buildup. All instances have
+smaller contextual spikes in the generated data, and one spike is placed
+shortly after `now()` to demonstrate a forthcoming incident in the
+already-written future window.
+
+</details>
+
+### 4. From anomaly score to alert
+
+Open:
+
+- Local Alertmanager: http://localhost:9093
+- Local webhook inbox: http://localhost:5001
+- Cloud Alertmanager: http://localhost:19093
+- Cloud webhook inbox: http://localhost:15001
+
+Questions:
+
+- Which alert rule is firing?
+- Which `instance`, `for`, and `model_alias` labels make the alert actionable?
+- Does the webhook page show grouped notifications from Alertmanager?
+
+<details>
+<summary>Hint / answer</summary>
+
+The workshop rule is `APMAnomalyScoreHigh`. vmalert evaluates the anomaly score
+expression, sends firing alerts to Alertmanager, and Alertmanager sends grouped
+JSON notifications to the local webhook inbox. The useful labels are
+`instance`, `for`, `service_name`, `model_alias`, and `scheduler_alias`.
+
+</details>
 
 Stop local cloud-mode containers:
 
@@ -277,7 +426,27 @@ flowchart TD
   vm --> grafana
 ```
 
-The generator keeps `synthetic_series_id`, `instance`, and
-`service_instance_id` consistent across historical and future timestamps. This
-avoids cold-start-looking label drift when the demo queries historical data and
-then continues into already-written future data.
+The generator keeps the `instance` label consistent across historical and
+future timestamps. This avoids cold-start-looking label drift when the demo
+queries historical data and then continues into already-written future data.
+
+`shared/dataloader_config.yml` is scenario-based:
+
+- `labels` holds shared OpenTelemetry-style labels. Label values may be scalars
+  or per-series lists such as `instance: [checkout-api-0, checkout-api-1]`.
+- `signal` defines the normal baseline from `base`, `scale`, optional
+  `seasonalities` such as summed sinusoids and weekday/weekend modulation,
+  optional trend components, and `noise`.
+- `value_range` bounds generated values in metric units, for example `[0, 1]`
+  for normalized ratios, `[0, 100]` for percentages, and `[0, inf]` for rates
+  or durations. For counters, this range applies to generated increments before
+  cumulative conversion.
+- `anomalies` overlays deterministic incidents. Relative starts are resolved
+  around the dataloader start time: `1h` means one hour ago, `30m` means thirty
+  minutes ago, and `-5m` means five minutes into the generated future.
+- Main incidents can target all series or a selected series, can have per-series
+  starts, durations, and factors, and support `contextual`, `changepoint`, and
+  `slow_trend` types.
+- Low-grade historical anomalies use `placement: random`, short durations, and
+  small factors. They make history realistic without overwhelming normal
+  training behavior.

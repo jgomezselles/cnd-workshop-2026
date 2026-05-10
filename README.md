@@ -40,6 +40,7 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
 ## Tooling
 * Docker (tested on versions:  Client - 28.2.2 , Server 29.4.0)
 * Docker compose (tested on version v2.13.0)
+* POSIX shell for helper scripts: Linux/macOS Terminal or WSL 2 on Windows
 * Small k8s distro: minikube, kind or similar
 * kubectl: (tested on version: v1.33.1)
 * Helm: (tested on version: v3.18.1)

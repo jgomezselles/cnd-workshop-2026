@@ -1,0 +1,211 @@
+name: vmanomaly-otel-apm
+
+# This stack is intentionally self-contained:
+# - the optional dataloader writes historical and near-future synthetic APM metrics once;
+# - vmanomaly reads metrics from VictoriaMetrics;
+# - dataloader and vmanomaly write through vmagent, which buffers and
+#   rate-limits ingestion bursts before forwarding to VictoriaMetrics;
+# - vmagent also scrapes demo component self-monitoring metrics for Grafana.
+
+services:
+  victoriametrics:
+    container_name: otel-apm-victoriametrics
+    image: victoriametrics/victoria-metrics:v1.140.0
+    ports:
+      - "8428:8428"
+    volumes:
+      - vmdata-otel-apm:/storage
+    command:
+      - "--storageDataPath=/storage"
+      - "--httpListenAddr=:8428"
+      - "--retentionPeriod=90d"
+      - "--vmalert.proxyURL=http://vmalert:8880"
+      # Keep repeated demo runs easy to reason about. Do not use this in production.
+      - "--search.disableCache"
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+  vmagent:
+    container_name: otel-apm-vmagent
+    image: victoriametrics/vmagent:v1.140.0
+    depends_on:
+      victoriametrics:
+        condition: service_started
+    ports:
+      - "8429:8429"
+    volumes:
+      - vmagentdata-otel-apm:/vmagentdata
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../shared/vmagent-relabel.yml:/etc/vmagent/relabel.yml:ro
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.tmpDataPath=/vmagentdata"
+      - "--remoteWrite.url=http://victoriametrics:8428/api/v1/write"
+      - "--remoteWrite.relabelConfig=/etc/vmagent/relabel.yml"
+      - "--remoteWrite.rateLimit=${VMAGENT_REMOTE_WRITE_RATE_LIMIT_BYTES_PER_SE\
+        C:-1048576}"
+      - "--remoteWrite.maxDiskUsagePerURL=${VMAGENT_REMOTE_WRITE_MAX_DISK_PER_U\
+        RL:-2GB}"
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+  dataloader:
+    container_name: otel-apm-dataloader
+    image: victoriametrics/vmanomaly:v1.29.4-rc1
+    platform: "linux/amd64"
+    profiles: [ "seed" ]
+    depends_on:
+      vmagent:
+        condition: service_started
+    environment:
+      # Reuse dataloader_config.yml for identical synthetic data while
+      # routing writes through vmagent for buffering/rate limiting.
+      DATALOADER_DATASOURCE_URL: http://vmagent:8429/
+    volumes:
+      - ../shared/dataloader_config.yml:/demo/dataloader_config.yml:ro
+      - ../shared/mock_data_loader.py:/demo/mock_data_loader.py:ro
+    entrypoint:
+      - "python"
+      - "/demo/mock_data_loader.py"
+      - "/demo/dataloader_config.yml"
+      - "120"
+    networks:
+      - otel_apm_net
+    restart: "no"
+
+  vmanomaly:
+    container_name: otel-apm-vmanomaly
+    image: victoriametrics/vmanomaly:v1.29.4-rc1
+    platform: "linux/amd64"
+    user: "0:0"
+    depends_on:
+      vmagent:
+        condition: service_started
+    ports:
+      - "8490:8490"
+    environment:
+      VM_LICENSE_FILE: /run/secrets/vmanomaly_license
+      # Persist model and data snapshots on named Docker volumes. This keeps
+      # online state available across container restarts when volumes are kept.
+      VMANOMALY_MODEL_DUMPS_DIR: /mnt/models/vmanomaly
+      VMANOMALY_DATA_DUMPS_DIR: /mnt/data/vmanomaly
+      VMANOMALY_MEMBERS_COUNT: "1"
+      VMANOMALY_MEMBER_NUM: "0"
+      VMANOMALY_REPLICATION_FACTOR: "1"
+      VMANOMALY_SPLIT_BY: COMPLETE
+      # up.sh exports fresh values. Defaults keep `docker compose down/config`
+      # usable even before env.sh has been sourced.
+      VMANOMALY_BACKFILL_FROM: ${VMANOMALY_BACKFILL_FROM:-1970-01-01T00:00:00Z}
+      VMANOMALY_BACKFILL_TO: ${VMANOMALY_BACKFILL_TO:-1970-01-01T00:00:00Z}
+      VMANOMALY_UI_DATASOURCE_URL: http://victoriametrics:8428
+      VMANOMALY_UI_DATASOURCE_TYPE: vm
+    volumes:
+      # Mount the config file directly so --watch can reload edited settings.
+      - ./vmanomaly_config.yml:/config/vmanomaly_config.yml:ro
+      - ../.secret/license:/run/secrets/vmanomaly_license:ro
+      - vmanomaly-models-otel-apm:/mnt/models
+      - vmanomaly-data-otel-apm:/mnt/data
+    command:
+      - "/config/vmanomaly_config.yml"
+      - "--loggerLevel=INFO"
+      # Reload config changes without recreating the container. This is useful
+      # while iterating on demo queries, schedulers, and model settings.
+      - "--watch"
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+  vmalert:
+    container_name: otel-apm-vmalert
+    image: victoriametrics/vmalert:v1.140.0
+    depends_on:
+      victoriametrics:
+        condition: service_started
+      alertmanager:
+        condition: service_started
+    ports:
+      - "8880:8880"
+    volumes:
+      - ../shared/vmalert_config.yml:/etc/alerts/alerts.yml:ro
+    command:
+      - "--datasource.url=http://victoriametrics:8428/"
+      - "--remoteRead.url=http://victoriametrics:8428/"
+      - "--remoteWrite.url=http://victoriametrics:8428/"
+      - "--notifier.url=http://alertmanager:9093/"
+      - "--rule=/etc/alerts/*.yml"
+      - "--httpListenAddr=:8880"
+      - "--external.url=http://127.0.0.1:3000"
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+  alertmanager:
+    container_name: otel-apm-alertmanager
+    image: prom/alertmanager:v0.32.0
+    depends_on:
+      alert-webhook:
+        condition: service_started
+    ports:
+      - "9093:9093"
+    volumes:
+      - ../shared/alertmanager.yml:/config/alertmanager.yml:ro
+    command:
+      - "--config.file=/config/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.listen-address=:9093"
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+  alert-webhook:
+    container_name: otel-apm-alert-webhook
+    image: python:3.13-alpine
+    ports:
+      - "5001:5001"
+    volumes:
+      - ../shared/alert_webhook.py:/app/alert_webhook.py:ro
+    command:
+      - "python"
+      - "/app/alert_webhook.py"
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+  grafana:
+    container_name: otel-apm-grafana
+    image: grafana/grafana-oss:12.4.3
+    depends_on:
+      victoriametrics:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    environment:
+      # Required by the anomaly score dashboard imported from Grafana Cloud.
+      GF_INSTALL_PLUGINS: victoriametrics-metrics-datasource
+      # Demo-only defaults: anyone opening localhost gets an admin Grafana session.
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_DISABLE_SIGNOUT_MENU: "true"
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - grafanadata-otel-apm:/var/lib/grafana
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ../shared/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../shared/provisioning/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+volumes:
+  vmagentdata-otel-apm: {}
+  vmdata-otel-apm: {}
+  grafanadata-otel-apm: {}
+  vmanomaly-models-otel-apm: {}
+  vmanomaly-data-otel-apm: {}
+
+networks:
+  otel_apm_net:
+    driver: bridge

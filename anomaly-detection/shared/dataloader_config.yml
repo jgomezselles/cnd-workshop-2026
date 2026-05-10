@@ -1,0 +1,136 @@
+datasource_url: "http://victoriametrics:8428/"
+
+# Labels use Prometheus-normalized OpenTelemetry semantic attributes.
+# Example: OTel `service.name` becomes Prometheus label `service_name`.
+# Keep labels low-cardinality for the demo; add noisy dimensions later only
+# when the demo explicitly needs cardinality or correlation examples.
+
+series:
+  # Checkout API p95 latency, already aggregated from an OTel histogram.
+  # Unit/type are encoded by convention in the metric name:
+  # *_seconds_p95 is a latency gauge in seconds.
+  # Business intuition: users can buy, but the checkout path is getting slow.
+  - series_name: "apm_http_server_request_duration_seconds_p95"
+    labels:
+      service_namespace: "shop"
+      service_name: "checkout-api"
+      service_version: "1.18.0"
+      deployment_environment_name: "production"
+      k8s_cluster_name: "prod-eu-1"
+      k8s_namespace_name: "shop-prod"
+      cloud_region: "eu-central-1"
+      http_route: "/checkout"
+      http_request_method: "POST"
+      business_flow: "checkout"
+    series_labels:
+      - instance: "checkout-api-0"
+        service_instance_id: "checkout-api-0"
+        synthetic_series_id: "checkout-api-0"
+        k8s_pod_name: "checkout-api-7c9df6b57d-0"
+      - instance: "checkout-api-1"
+        service_instance_id: "checkout-api-1"
+        synthetic_series_id: "checkout-api-1"
+        k8s_pod_name: "checkout-api-7c9df6b57d-1"
+      - instance: "checkout-api-2"
+        service_instance_id: "checkout-api-2"
+        synthetic_series_id: "checkout-api-2"
+        k8s_pod_name: "checkout-api-7c9df6b57d-2"
+    seasonal: true
+    seasonality_type: flat
+    n_series: 3
+    freq: "30s"
+    historical_length: "21D"
+    future_length: "2D"
+    scale: 0.28
+    data_range: [0.01, 8]
+    seasonal_anomalies: true
+    anomaly_percentage: 0.003
+    anomaly_changepoint: true
+    changepoint_magnitude: 2.3
+    changepoint_position: 0.90
+    cumulative: false
+    random_state: 1101
+
+  # Checkout request volume, represented as a Prometheus counter.
+  # *_count_total follows the Prometheus counter naming convention.
+  # Business intuition: strong daily/weekly seasonality and a future traffic drop.
+  - series_name: "apm_http_server_request_count_total"
+    labels:
+      service_namespace: "shop"
+      service_name: "checkout-api"
+      service_version: "1.18.0"
+      deployment_environment_name: "production"
+      k8s_cluster_name: "prod-eu-1"
+      k8s_namespace_name: "shop-prod"
+      cloud_region: "eu-central-1"
+      http_route: "/checkout"
+      http_request_method: "POST"
+      business_flow: "checkout"
+    series_labels:
+      - instance: "checkout-api-0"
+        service_instance_id: "checkout-api-0"
+        synthetic_series_id: "checkout-api-0"
+        k8s_pod_name: "checkout-api-7c9df6b57d-0"
+      - instance: "checkout-api-1"
+        service_instance_id: "checkout-api-1"
+        synthetic_series_id: "checkout-api-1"
+        k8s_pod_name: "checkout-api-7c9df6b57d-1"
+      - instance: "checkout-api-2"
+        service_instance_id: "checkout-api-2"
+        synthetic_series_id: "checkout-api-2"
+        k8s_pod_name: "checkout-api-7c9df6b57d-2"
+    seasonal: true
+    seasonality_type: sinusoidal
+    n_series: 3
+    freq: "30s"
+    historical_length: "21D"
+    future_length: "2D"
+    scale: 850
+    data_range: [0, "inf"]
+    seasonal_anomalies: true
+    anomaly_percentage: 0.002
+    cumulative: true
+    random_state: 2202
+
+  # Payment dependency error ratio, kept as a simple bounded gauge.
+  # Ratio semantics are carried by the metric name and bounded data_range.
+  # Business intuition: payment failures are rare, so spikes are easy to explain.
+  - series_name: "apm_rpc_client_error_ratio"
+    labels:
+      service_namespace: "shop"
+      service_name: "checkout-api"
+      service_version: "1.18.0"
+      deployment_environment_name: "production"
+      k8s_cluster_name: "prod-eu-1"
+      k8s_namespace_name: "shop-prod"
+      cloud_region: "eu-central-1"
+      rpc_system: "grpc"
+      rpc_service: "payments.PaymentService"
+      rpc_method: "Authorize"
+      peer_service: "payment-service"
+      business_flow: "checkout"
+    series_labels:
+      - instance: "checkout-api-0"
+        service_instance_id: "checkout-api-0"
+        synthetic_series_id: "checkout-api-0"
+        k8s_pod_name: "checkout-api-7c9df6b57d-0"
+      - instance: "checkout-api-1"
+        service_instance_id: "checkout-api-1"
+        synthetic_series_id: "checkout-api-1"
+        k8s_pod_name: "checkout-api-7c9df6b57d-1"
+      - instance: "checkout-api-2"
+        service_instance_id: "checkout-api-2"
+        synthetic_series_id: "checkout-api-2"
+        k8s_pod_name: "checkout-api-7c9df6b57d-2"
+    seasonal: false
+    n_series: 3
+    freq: "30s"
+    historical_length: "21D"
+    future_length: "2D"
+    scale: 0.018
+    data_range: [0, 1]
+    simple_anomaly: true
+    simple_magnitude: 9
+    anomaly_percentage: 0.002
+    cumulative: false
+    random_state: 3303

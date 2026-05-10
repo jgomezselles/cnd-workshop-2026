@@ -1,0 +1,13 @@
+groups:
+  - name: vmanomaly-otel-apm
+    interval: 30s
+    rules:
+      - alert: APMAnomalyScoreHigh
+        expr: 'max_over_time(anomaly_score{for=~"checkout_latency_p95|checkout_request_rate|payment_error_ratio"}[2m]) > 1'
+        for: 1m
+        labels:
+          severity: warning
+          demo: "otel-apm"
+        annotations:
+          summary: 'High anomaly score for {{ $labels.service_name }} / {{ $labels.for }}'
+          description: 'service_instance_id={{ $labels.service_instance_id }}, flow={{ $labels.business_flow }}, score={{ $value }}'

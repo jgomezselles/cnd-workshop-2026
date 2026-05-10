@@ -1,0 +1,4827 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "11.4.0"
+    },
+    {
+      "type": "panel",
+      "id": "histogram",
+      "name": "Histogram",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "Text",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Self-monitoring for VictoriaMetrics Anomaly Detection (vmanomaly) v1.18.4 or higher",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 2,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": false,
+      "title": "VictoriaMetrics Anomaly Detection Docs",
+      "tooltip": "",
+      "type": "link",
+      "url": "https://docs.victoriametrics.com/anomaly-detection"
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9281,
+      "panels": [],
+      "title": "Instance Overview",
+      "type": "row"
+    },
+    {
+      "description": "This table offer aggregated insights across all *selected* instances of [VictoriaMetrics Anomaly Detection](https://victoriametrics.com/products/enterprise/anomaly-detection/). <br>Only time range control the data displayed in this table.\n<br>Column description:\n- **instance**: particular `vmanomaly` instance name\n- **job**: job name that exported `vmanomaly` instance metrics (default=`vmanomaly`)\n- **version**: particular `vmanomaly` instance service [version](https://docs.victoriametrics.com/anomaly-detection/changelog/)\n- **uptime** - particular `vmanomaly` instance uptime (since its recent relaunch)\n- **RAM** - used RAM by `vmanomaly` instance process\n- **CPU** - used CPU% by `vmanomaly` instance\n- **license:exp.in** - time left to license expiration\n- **m:active**: # of active models for `vmanomaly` instance\n- **r:skipped**: # of skipped runs (`fit`, `infer`, `fit_infer`)\n- **r:errors** - # of error in runs (`fit`, `infer`, `fit_infer`)\n- **r:success** - # of successful runs (`fit`, `infer`, `fit_infer`)\n- **i/o:reads** - % of successful read requests\n- **i/o:writes** - % of successful write requests\n- **i/o:total** - % of successful I/O requests \n- **r:acc.rate** - data acceptance rate (`fit_infer`, `infer` stages), points produced/accepted\n- **conf:shard** # of [sub-configurations](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#sub-configuration) attached to that shard (if sharded mode is enabled). Replication factor > 1 can increase this number\n- **conf:total** # of total [sub-configurations](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#sub-configuration) available for sharding after [global config](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#global-configuration) split (if sharded mode is enabled)\n- **conf:%** percentage of [sub-configurations](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#sub-configuration) attached to that shard (if sharded mode is enabled, otherwise 100%). Replication factor > 1 can increase this number",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 9297,
+      "links": [
+        {
+          "title": "Logs description",
+          "url": "https://docs.victoriametrics.com/anomaly-detection/components/monitoring/#logs-generated-by-vmanomaly"
+        },
+        {
+          "title": "Metrics description",
+          "url": "https://docs.victoriametrics.com/anomaly-detection/components/monitoring/#metrics-generated-by-vmanomaly"
+        }
+      ],
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "This table provides aggregated insights across all *selected* instances of [VictoriaMetrics Anomaly Detection](https://victoriametrics.com/products/enterprise/anomaly-detection/). <br> Only the time range, `job` and `instance` filters applies to the displayed data. Hover over the (i) icon for column descriptions.\n",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.4.0",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "This table offer aggregated insights across all *selected* instances of [VictoriaMetrics Anomaly Detection](https://victoriametrics.com/products/enterprise/anomaly-detection/). <br>Only time range control the data displayed in this table.\n<br>Column description:\n- **instance**: particular `vmanomaly` instance name\n- **job**: job name that exported `vmanomaly` instance metrics (default=`vmanomaly`)\n- **version**: particular `vmanomaly` instance service [version](https://docs.victoriametrics.com/anomaly-detection/changelog/)\n- **uptime** - particular `vmanomaly` instance uptime (since its recent relaunch)\n- **RAM** - used RAM by `vmanomaly` instance process\n- **CPU** - used CPU% by `vmanomaly` instance\n- **license:exp.in** - time left to license expiration\n- **m:active**: # of active models for `vmanomaly` instance\n- **r:skipped**: # of skipped runs (`fit`, `infer`, `fit_infer`)\n- **r:errors** - # of error in runs (`fit`, `infer`, `fit_infer`)\n- **r:success** - # of successful runs (`fit`, `infer`, `fit_infer`)\n- **i/o:reads** - % of successful read requests\n- **i/o:writes** - % of successful write requests\n- **i/o:total** - % of successful I/O requests \n- **r:acc.rate** - data acceptance rate (`fit_infer`, `infer` stages), points produced/accepted\n- **conf:shard** # of [sub-configurations](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#sub-configuration) attached to that shard (if sharded mode is enabled). Replication factor > 1 can increase this number\n- **conf:total** # of total [sub-configurations](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#sub-configuration) available for sharding after [global config](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#global-configuration) split (if sharded mode is enabled)\n- **conf:%** percentage of [sub-configurations](https://docs.victoriametrics.com/anomaly-detection/scaling-vmanomaly/#sub-configuration) attached to that shard (if sharded mode is enabled, otherwise 100%). Replication factor > 1 can increase this number",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto",
+              "wrapText": true
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "uptime"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "r:errors"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "r:skipped"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "license:exp.in"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 259200
+                    },
+                    {
+                      "color": "green",
+                      "value": 1209600
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/(acc\\.rate$|i\\/o\\:.*)/"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "gauge",
+                  "valueDisplayMode": "color"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "dark-red",
+                      "value": null
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 0.95
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color"
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "job"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "version"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "r:success"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "i/o:reads"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "i/o:writes"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "instance"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "i/o: total"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "i/o:writes"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "m:active"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "m:active"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "r:success"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "i/o:reads"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "r:acc.rate"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "i/o:total"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RAM"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CPU%"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.8
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.95
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "gauge",
+                  "valueDisplayMode": "color"
+                }
+              },
+              {
+                "id": "color"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "r:acc.rate"
+            },
+            "properties": []
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RAM%"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "basic",
+                  "type": "gauge",
+                  "valueDisplayMode": "color"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "color"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 0.75
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.9
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conf:%"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conf:shard"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 127
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "conf:total"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 122
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/conf\\:.*/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 9314,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "r:success"
+          }
+        ]
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "group by (job,instance,version) (vmanomaly_version_info{job=~\"$job\",instance=~\"$instance\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "primary_key"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job,instance) (increase(vmanomaly_model_runs_skipped_total{job=~\"$job\",instance=~\"$instance\"}[$__range]))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "runs_skipped"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job,instance) (increase(vmanomaly_model_run_errors_total{job=~\"$job\",instance=~\"$instance\"}[$__range]))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "run_errors"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job,instance) (increase(vmanomaly_model_runs_total{job=~\"$job\",instance=~\"$instance\"}[$__range]))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "runs_successful"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "time() - (sum by (job,instance) (vmanomaly_start_time_seconds{job=~\"$job\",instance=~\"$instance\"}))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "uptime"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "vm_license_expires_at{job=~\"$job\",instance=~\"$instance\"} - time()",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "license_expiration"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  valid = {__name__=\"vmanomaly_reader_responses_total\", instance=~\"$instance\", job=~\"$job\", code=~\"2..\"},\n  all = {__name__=\"vmanomaly_reader_responses_total\", instance=~\"$instance\", job=~\"$job\"}\n)\n(sum(increase(valid[$__range])) by (job, instance)) / (sum(increase(all[$__range])) by (job, instance))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "io_success_reader"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  valid = {__name__=\"vmanomaly_writer_responses_total\", instance=~\"$instance\", job=~\"$job\", code=~\"2..\"},\n  all = {__name__=\"vmanomaly_writer_responses_total\", instance=~\"$instance\", job=~\"$job\"}\n)\n(sum(increase(valid[$__range])) by (job, instance)) / (sum(increase(all[$__range])) by (job, instance))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "io_success_writer"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  valid = {__name__=~'vmanomaly_(writer|reader)_responses_total', instance=~\"$instance\", job=~\"$job\", code=~\"2..\"},\n  all = {__name__=~'vmanomaly_(writer|reader)_responses_total', instance=~\"$instance\", job=~\"$job\"}\n)\n(sum(increase(valid[$__range])) by (job, instance)) / (sum(increase(all[$__range])) by (job, instance))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "io_success_total"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(vmanomaly_models_active{job=~\"$job\", instance=~\"$instance\"}) by (job, instance)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "models_active"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  acc = {__name__=~'vmanomaly_model_datapoints_accepted_total', instance=~\"$instance\", job=~\"$job\", stage=~\".*infer\"},\n  prod = {__name__=~'vmanomaly_model_datapoints_produced_total', instance=~\"$instance\", job=~\"$job\", stage=~\".*infer\"}\n)\n(sum(increase({acc}[$__range])) by (job, instance)) / (sum(increase({prod}[$__range])) by (job, instance))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "infer_acceptance"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by(job,instance) (process_resident_memory_bytes{job=~\"$job\",instance=~\"$instance\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "ram"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job,instance) (rate(process_cpu_seconds_total{job=~\"$job\",instance=~\"$instance\"})) / sum by (job,instance) (vmanomaly_cpu_cores_available{job=~\"$job\",instance=~\"$instance\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "cpu"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by(job,instance) (process_resident_memory_bytes{job=~\"$job\",instance=~\"$instance\"}) / sum by(job,instance) (vmanomaly_available_memory_bytes{job=~\"$job\",instance=~\"$instance\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "ram_perc"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job, instance) (vmanomaly_config_entities{job=~\"$job\", instance=~\"$instance\", scope=\"shard\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "conf_ent_shard"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job, instance) (vmanomaly_config_entities{job=~\"$job\", instance=~\"$instance\", scope=\"total\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "conf_ent_total"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job, instance) (vmanomaly_config_entities{job=~\"$job\", instance=~\"$instance\", scope=\"shard\"}) / sum by (job, instance) (vmanomaly_config_entities{job=~\"$job\", instance=~\"$instance\", scope=\"total\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
+          "refId": "conf_util_perc"
+        }
+      ],
+      "title": "Overview",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": false,
+              "Value #A": true,
+              "Value #primary_key": true,
+              "__name__": true,
+              "host": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "Time": 17,
+              "Value #cpu": 7,
+              "Value #infer_acceptance": 16,
+              "Value #io_success_reader": 13,
+              "Value #io_success_total": 15,
+              "Value #io_success_writer": 14,
+              "Value #license_expiration": 8,
+              "Value #models_active": 9,
+              "Value #primary_key": 3,
+              "Value #ram": 5,
+              "Value #ram_perc": 6,
+              "Value #run_errors": 11,
+              "Value #runs_skipped": 10,
+              "Value #runs_successful": 12,
+              "Value #uptime": 4,
+              "instance": 0,
+              "job": 1,
+              "version": 2
+            },
+            "renameByName": {
+              "Value": "acc.rate",
+              "Value #A": "",
+              "Value #B": "runs: skipped",
+              "Value #C": "runs: errors",
+              "Value #D": "uptime",
+              "Value #E": "license exp. in",
+              "Value #F": "runs: success",
+              "Value #I/O Success (reader)": "I/O: reads",
+              "Value #I/O Success (total)": "I/O: total",
+              "Value #I/O Success (writer)": "I/O: writes",
+              "Value #conf_ent_shard": "conf:shard",
+              "Value #conf_ent_total": "conf:total",
+              "Value #conf_util_perc": "conf:%",
+              "Value #cpu": "CPU%",
+              "Value #infer_acceptance": "r:acc.rate",
+              "Value #io_success_reader": "i/o:reads",
+              "Value #io_success_total": "i/o:total",
+              "Value #io_success_writer": "i/o:writes",
+              "Value #license_expiration": "license:exp.in",
+              "Value #models_active": "m:active",
+              "Value #ram": "RAM",
+              "Value #ram_perc": "RAM%",
+              "Value #run_errors": "r:errors",
+              "Value #runs_skipped": "r:skipped",
+              "Value #runs_successful": "r:success",
+              "Value #uptime": "uptime"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 11,
+      "panels": [],
+      "title": "Global Statistics",
+      "type": "row"
+    },
+    {
+      "description": "These panels offer **aggregated** insights across all *selected* instances of [VictoriaMetrics Anomaly Detection](https://victoriametrics.com/products/enterprise/anomaly-detection/). <br>Dashboard filters and time range control the data displayed in these panels. Refer to the links section for metrics and log descriptions.",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 9283,
+      "links": [
+        {
+          "title": "Logs description",
+          "url": "https://docs.victoriametrics.com/anomaly-detection/components/monitoring/#logs-generated-by-vmanomaly"
+        },
+        {
+          "title": "Metrics description",
+          "url": "https://docs.victoriametrics.com/anomaly-detection/components/monitoring/#metrics-generated-by-vmanomaly"
+        }
+      ],
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "These panels offer aggregated insights across all *selected* instances of [VictoriaMetrics Anomaly Detection](https://victoriametrics.com/products/enterprise/anomaly-detection/). <br>Dashboard filters and time range control the data displayed in these panels. Refer to the links section for metrics and log descriptions.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.4.0",
+      "type": "text"
+    },
+    {
+      "description": "Model runs statistics",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 9288,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "#### Model Runs Statistics\n\nHover over visualization's (i) icon for the descriptions. Note: [Rolling models](https://docs.victoriametrics.com/anomaly-detection/components/models/#rolling-models) make combined `fit_infer` call, [non-rolling](https://docs.victoriametrics.com/anomaly-detection/components/models/#non-rolling-models) models make separate `fit` and `infer` calls.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.4.0",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Number of unique entities being currently active for model instances of class `model_alias` currently available for inference for the `query_key` query, within the specified scheduler `scheduler_alias`, in the vmanomaly service running in `preset` mode.\n</br>Too many entities may slow down the system.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 3,
+        "x": 0,
+        "y": 17
+      },
+      "id": 9315,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "sum(vmanomaly_models_active{instance=~\"$instance\", job=~\"$job\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\",model_alias=~\"$model_alias\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "active models",
+          "range": true,
+          "refId": "ma_cnt"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  uniq_q_cnt = {__name__=~\"vmanomaly_model_runs_total\", job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}\n)\n\ncount(count by (query_key) ({uniq_q_cnt}))\n",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "queries",
+          "refId": "q_cnt"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "with (\n  uniq_q_cnt = {__name__=~\"vmanomaly_model_runs_total\", job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}\n)\n\ncount(count by (instance) ({uniq_q_cnt}))\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "instances",
+          "range": true,
+          "refId": "i_cnt"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "with (\n  uniq_q_cnt = {__name__=~\"vmanomaly_model_runs_total\", job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}\n)\n\ncount(count by (job) ({uniq_q_cnt}))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "jobs",
+          "range": true,
+          "refId": "j_cnt"
+        }
+      ],
+      "title": "# Unique entities",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "How many successful `stage` (`fit`, `infer`, `fit_infer`) runs occurred for models of class `model_alias` based on results from the `query_key` query, within the specified scheduler `scheduler_alias`, in the `vmanomaly` service running in `preset` mode.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 3,
+        "y": 17
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  f = {__name__=\"vmanomaly_model_runs_total\", job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", model_alias=~\"$model_alias\",query_key=~\"$query_key\"}\n)\nsum(increase(f[$__range])) by (stage)",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{stage}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Runs: Successful",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "The number of times model runs (of class `model_alias`) failed due to internal service errors during the `stage` (`fit`, `infer`, `fit_infer`), based on results from the `query_key` query, within the specified scheduler `scheduler_alias`, in the `vmanomaly` service running in `preset` mode.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 17
+      },
+      "id": 9286,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (stage) (increase(vmanomaly_model_run_errors_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}[$__range]))",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{stage}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Runs: Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "The number of times model runs (of class `model_alias`) were skipped in expected situations (e.g., no data for fitting/inference, or no new data to infer on) during the `stage` (`fit`, `infer`, `fit_infer`), based on results from the `query_key` query, within the specified scheduler `scheduler_alias`, in the `vmanomaly` service running in `preset` mode.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 12,
+        "y": 17
+      },
+      "id": 9150,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (stage) (increase(vmanomaly_model_runs_skipped_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}[$__range]))",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{stage}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Runs: Skipped",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Percentage of skipped/errors in total model runs",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.00001
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 7,
+        "x": 17,
+        "y": 17
+      },
+      "id": 9282,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  err = {__name__=~\"vmanomaly_model_run(s_skipped_total|_errors_total)\", job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"},\n  tot = {__name__=~\"vmanomaly_model_run(s_total|s_skipped_total|_errors_total)\", job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}\n)\n\n(sum(increase({err}[$__range])) by (stage) ) / (sum (increase({tot}[$__range])) by (stage) )",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{stage}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Runs: Problematic %",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Average (weighted) CPU time required to complete particular stage (`fit`, `infer`, `fit_infer`) given applied filters. Simply put, this shows the time spent processing each *individual model instance* (noting that usually more than 1 instance of each model type may be active concurrently).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fit_infer"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 3,
+        "y": 21
+      },
+      "id": 9291,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH (f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", model_alias=~\"$model_alias\"})\n(sum(vmanomaly_model_run_duration_seconds_sum{f}) by (stage) ) / (sum(vmanomaly_model_run_duration_seconds_count{f}) by (stage))",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{stage}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Avg. Run Time, by Stage",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "99% percentile of CPU time required to complete particular stage (`fit`, `infer`, `fit_infer`) given applied filters. Simply put, this shows the time spent processing each *individual model instance* (noting that usually more than 1 instance of each model type may be active concurrently).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fit_infer"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 7,
+        "x": 9,
+        "y": 21
+      },
+      "id": 9292,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "histogram_quantile(0.99, sum(rate(vmanomaly_model_run_duration_seconds_bucket{job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_alias=~\"$query_key\", model_alias=~\"$model_alias\"}[$__range])) by (stage, le))",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{stage}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Avg. Run Time, by Stage (99% percentile)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Avg. **Total** time taken to complete each specified stage (`fit`, `infer`, `fit_infer`) across all selected model instances. For instance, if the average `fit` time is 1s per instance and there are 2 instances, the total time will be 2 * 1s = 2s.\n\nAdditionally, on multicore systems, the cumulative CPU time (e.g., 20s for the `infer` stage) can exceed the `infer_every` interval (e.g., 10s).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fit_infer"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 21
+      },
+      "id": 9303,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "WITH (f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", model_alias=~\"$model_alias\"})\nsum by (stage) (\n  sum by (job, instance, preset, scheduler_alias, query_key, model_alias, stage) (\n    vmanomaly_model_run_duration_seconds_sum{f} / vmanomaly_model_run_duration_seconds_count{f}\n  ) * on (job, instance, preset, scheduler_alias, query_key, model_alias)\n  group_right(stage) vmanomaly_models_active{f}\n)\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Avg. Total Run Time, by Stage",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "The ratio of datapoints produced to datapoints accepted during inference (`infer`, `fit_infer` stages). Ideally, this should approach 100%, signifying no erroneous data is received from the input data source.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.9999
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 9,
+        "x": 3,
+        "y": 25
+      },
+      "id": 139,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f={job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\", model_alias=~\"$model_alias\",query_key=~\"$query_key\", stage=~\".*infer\"})\nsum by (stage) (increase(vmanomaly_model_datapoints_produced_total{f}[$__range])) / sum by (stage) (increase(vmanomaly_model_datapoints_accepted_total{f}[$__range]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Data Acceptance, Inference (%)",
+      "type": "stat"
+    },
+    {
+      "description": "I/O Statistics",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "id": 9287,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "#### I/O Statistics\n\nHow many datapoints, timeseries and bytes were sent/received given the filters. Overall success rate for I/O.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.4.0",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Last successful run timestamp, read/write. If several models, queries and schedulers exists, get **oldest** timestamp to track for outdated values",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "dateTimeAsLocal"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 31
+      },
+      "id": 9305,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "min(timestamp(last_over_time(vmanomaly_reader_responses_total{job=~\"$job\", instance=~\"$instance\",preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", code=~\"2..\"}[$__range]))) by () * 1000",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "read",
+          "range": false,
+          "refId": "read"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "min(timestamp(last_over_time(vmanomaly_writer_responses_total{job=~\"$job\", instance=~\"$instance\",preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", code=~\"2..\"}[$__range]))) by () * 1000",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "write",
+          "range": false,
+          "refId": "write"
+        }
+      ],
+      "title": "Last available value",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Value #read": "read, dt",
+              "Value #write": "write, dt"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Percentage of successful reads, writes and total I/O with respect to the filters applied",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 0.9999
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 16,
+        "x": 8,
+        "y": 31
+      },
+      "id": 9290,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "with (\n  valid = {__name__='vmanomaly_reader_responses_total', instance=~\"$instance\", job=~\"$job\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", code=~\"2..\"},\n  all = {__name__='vmanomaly_reader_responses_total', instance=~\"$instance\", job=~\"$job\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"}\n)\n(sum(increase(valid[$__range])) by ()) / (sum(increase(all[$__range])) by ())",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "Reads",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "with (\n  valid = {__name__='vmanomaly_writer_responses_total', instance=~\"$instance\", job=~\"$job\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", code=~\"2..\"},\n  all = {__name__='vmanomaly_writer_responses_total', instance=~\"$instance\", job=~\"$job\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"}\n)\n(sum(increase(valid[$__range])) by ()) / (sum(increase(all[$__range])) by ())",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Writes",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "with (\n  valid = {__name__=~'vmanomaly_(writer|reader)_responses_total', instance=~\"$instance\", job=~\"$job\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", code=~\"2..\"},\n  all = {__name__=~'vmanomaly_(writer|reader)_responses_total', instance=~\"$instance\", job=~\"$job\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"}\n)\n(sum(increase(valid[$__range])) by ()) / (sum(increase(all[$__range])) by ())",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Total",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "I/O success, %",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Total timeseries (metrics) received/sent by models, across stages",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 11,
+        "x": 0,
+        "y": 35
+      },
+      "id": 9294,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "timezone": [
+          ""
+        ],
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(vmanomaly_reader_timeseries_received_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by ()",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "In",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(vmanomaly_writer_timeseries_sent_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by ()",
+          "hide": false,
+          "legendFormat": "Out",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Timeseries I/O",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Total data points (rows) received/sent by models, across stages",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 13,
+        "x": 11,
+        "y": 35
+      },
+      "id": 9295,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(vmanomaly_reader_datapoints_received_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by ()",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "In",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(vmanomaly_writer_datapoints_sent_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by ()",
+          "hide": false,
+          "legendFormat": "Out",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Datapoints I/O",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Total bytes received/sent with respect to applied filters.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 11,
+        "x": 0,
+        "y": 42
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(vmanomaly_reader_received_bytes_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"}[$__range])) by ()",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "In",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(vmanomaly_writer_sent_bytes_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"}[$__interval])) by ()",
+          "hide": false,
+          "legendFormat": "Out",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Bytes I/O",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Avg. # of datapoints (rows) per timeseries received/sent",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 13,
+        "x": 11,
+        "y": 42
+      },
+      "id": 9296,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(increase(vmanomaly_reader_datapoints_received_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by () / sum(increase(vmanomaly_reader_timeseries_received_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by ()",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "In",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "sum(increase(vmanomaly_writer_datapoints_sent_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by () / sum(increase(vmanomaly_writer_timeseries_sent_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\"}[$__range])) by ()",
+          "hide": false,
+          "legendFormat": "Out",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Datapoints per TimeSeries",
+      "type": "timeseries"
+    },
+    {
+      "description": "Time taken for read, write, and input data processing stages.",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "id": 9301,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "#### Latency Statistics\n\nTime taken for read, write, and model processing stages.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.4.0",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Avg. time (s) spent by vmanomaly on getting input data from datasource",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 11,
+        "x": 0,
+        "y": 51
+      },
+      "id": 9300,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"})\nsum (increase(vmanomaly_reader_request_duration_seconds_sum{f}[$__range])) / sum(increase(vmanomaly_reader_request_duration_seconds_count{f}[$__range]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Read Latency",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Read latency (weighted avg.)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "How long vmanomaly waited for read requests to data source",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": ""
+            },
+            "properties": []
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 13,
+        "x": 11,
+        "y": 51
+      },
+      "id": 37,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"})\nsum (increase(vmanomaly_reader_request_duration_seconds_sum{f}[$__range])) / sum(increase(vmanomaly_reader_request_duration_seconds_count{f}[$__range])) * 1000",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "Read latency",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Read latencies distribution",
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Avg. time (s) spent by vmanomaly on processing input response data before it enters the models (by `step`)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "shades"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Data processing"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 11,
+        "x": 0,
+        "y": 56
+      },
+      "id": 9311,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"})\nsum (increase(vmanomaly_reader_response_parsing_seconds_sum{f}[$__range])) by (step) / sum(increase(vmanomaly_reader_response_parsing_seconds_count{f}[$__range])) by (step)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Data processing, {{step}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Response processing latency (weighted avg.)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Avg. time (s) spent by vmanomaly on processing input response data before it enters the models (`json`)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Response processing, json"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 11,
+        "y": 56
+      },
+      "id": 9312,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", step=\"json\"})\nsum (increase(vmanomaly_reader_response_parsing_seconds_sum{f}[$__range])) by (step)  / sum(increase(vmanomaly_reader_response_parsing_seconds_count{f}[$__range]))  by (step) * 1000",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "Response processing, {{step}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Processing time, json",
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Avg. time (s) spent by vmanomaly on processing input response data before it enters the models (`df`)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Response processing, json"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 7,
+        "x": 17,
+        "y": 56
+      },
+      "id": 9313,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\", step=\"df\"})\nsum (increase(vmanomaly_reader_response_parsing_seconds_sum{f}[$__range])) by (step)  / sum(increase(vmanomaly_reader_response_parsing_seconds_count{f}[$__range]))  by (step) * 1000",
+          "format": "time_series",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "Response processing, {{step}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Processing time, dataframe",
+      "type": "histogram"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Duration of time vmanomaly spent on avg. write request with output data",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 11,
+        "x": 0,
+        "y": 63
+      },
+      "id": 9302,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"})\nsum (increase(vmanomaly_writer_request_duration_seconds_sum{f}[$__range])) / sum(increase(vmanomaly_writer_request_duration_seconds_count{f}[$__range]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Write Latency",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Write latency (weighted avg.)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "How much time vmanomaly spent for write requests to write its anomaly estimates to the destination",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Write Latency"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 13,
+        "x": 11,
+        "y": 63
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f = {job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"})\nsum (increase(vmanomaly_writer_request_duration_seconds_sum{f}[$__range])) / sum(increase(vmanomaly_writer_request_duration_seconds_count{f}[$__range])) * 1000",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "Write Latency",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Write latencies distribution",
+      "type": "histogram"
+    },
+    {
+      "description": "Overall resource utilization: CPU (avg.), RAM (total) and FD (total) for filtered instances & jobs.",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 68
+      },
+      "id": 9306,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "#### Resource Statistics\n\nOverall resource utilization: CPU (avg.), RAM (total) and FD (total) for filtered instances & jobs.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.4.0",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Based on process' resident memory size in bytes. Total for selected jobs/instances",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 70
+      },
+      "id": 9307,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by() (process_resident_memory_bytes{job=~\"$job\",instance=~\"$instance\"}[$__range])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Total",
+          "range": true,
+          "refId": "RAM"
+        }
+      ],
+      "title": "RAM usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Total user and system CPU time spent in seconds. Avg. for selected jobs/instances",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 1,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 70
+      },
+      "id": 9308,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "avg by () (rate(process_cpu_seconds_total{job=~\"$job\",instance=~\"$instance\"}[$__interval]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Averaged",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "CPU usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Number of open file descriptors (by `vmanomaly` process). Total for selected jobs/instances",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 1,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 70
+      },
+      "id": 9309,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by () (process_open_fds{job=~\"$job\",instance=~\"$instance\"}[$__range])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Total",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "FD usage",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 76
+      },
+      "id": 13,
+      "panels": [],
+      "repeat": "instance",
+      "title": "Resource Usage per instance: $instance",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Based on process' resident memory size in bytes.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 77
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "sortBy": "Name",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by(job,instance) (process_resident_memory_bytes{job=~\"$job\",instance=~\"$instance\"}[$__range])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "job={{job}} ",
+          "range": true,
+          "refId": "RAM"
+        }
+      ],
+      "title": "RAM usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Total user and system CPU time spent in seconds.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 1,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": 3600000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 77
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job,instance) (rate(process_cpu_seconds_total{job=~\"$job\",instance=~\"$instance\"}[$__interval]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "job={{job}} ",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "CPU usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Number of open file descriptors (by `vmanomaly` process)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 1,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 33,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 77
+      },
+      "id": 9304,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (job,instance) (process_open_fds{job=~\"$job\",instance=~\"$instance\"}[$__range])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "job={{job}} ",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "FD usage",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 84
+      },
+      "id": 41,
+      "panels": [],
+      "repeat": "model_alias",
+      "title": "Model Alias Overview: $model_alias",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "Displays, for each `model_alias`, the number of unique queries it processes, the number of schedulers it is linked to, the number of instances utilizing this model and the number of active model instances of `model_alias` type",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 3,
+        "x": 0,
+        "y": 85
+      },
+      "id": 9299,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "sum (vmanomaly_models_active{model_alias=~\"$model_alias\"}) by (model_alias)\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Models",
+          "range": true,
+          "refId": "active_models"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count (count (vmanomaly_models_active{model_alias=~\"$model_alias\"}) by (model_alias, query_key)) by (model_alias)\n",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "Queries",
+          "range": true,
+          "refId": "active_queries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "count (count (vmanomaly_models_active{model_alias=~\"$model_alias\"}) by (model_alias, scheduler_alias)) by (model_alias)\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Schedulers",
+          "range": true,
+          "refId": "active_schedulers"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "count (count (vmanomaly_models_active{model_alias=~\"$model_alias\"}) by (model_alias, instance)) by (model_alias)\n",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Instances",
+          "range": true,
+          "refId": "active_instances"
+        }
+      ],
+      "title": "Uses",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "How many times vmanomaly ran during selected time range, total for all models of this class",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 3,
+        "y": 85
+      },
+      "id": 56,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (stage) (increase(vmanomaly_model_runs_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}[$__range]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{stage}}",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Runs: Success",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Models skipped running due to expected reasons (like no data to run stage on). Check vmanomaly logs for the details",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 7,
+        "y": 85
+      },
+      "id": 9151,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (stage) (vmanomaly_model_runs_skipped_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}[$__range])",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{stage}}",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Runs: Skipped",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Models skipped running due to data/model errors. Check vmanomaly logs for the details",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 11,
+        "y": 85
+      },
+      "id": 9298,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by (stage) (vmanomaly_model_run_errors_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}[$__range])",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "{{stage}}",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Runs: Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "How many datapoints models are processing during fit/infer stages, sum for all models of that `model_alias` type.\n<br>Note: for rolling models, which have combined `fit_infer` stage, volumes for fit and infer will be the same for consistency with other model types",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Infer"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 15,
+        "y": 85
+      },
+      "id": 82,
+      "options": {
+        "legend": {
+          "calcs": [
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f={job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\",model_alias=\"$model_alias\", stage=~\"fit.*\"})\nsum by () (increase(vmanomaly_model_datapoints_accepted_total{f}[$__range]))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Fit",
+          "range": true,
+          "refId": "FIT"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "WITH(f={job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",query_key=~\"$query_key\",model_alias=\"$model_alias\", stage=~\".*infer\"})\nsum by () (increase(vmanomaly_model_datapoints_accepted_total{f}[$__range]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Infer",
+          "range": true,
+          "refId": "INFER"
+        }
+      ],
+      "title": "Datapoints processed, by stage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "How many datapoints models are receiving (in) vs. producing (out), sum for models.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic",
+            "seriesBy": "last"
+          },
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 3,
+        "y": 89
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS:text}"
+          },
+          "editorMode": "code",
+          "expr": "WITH(f={job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\", stage=~\".*infer\",query_key=~\"$query_key\"})\nsum by (stage) (increase(vmanomaly_model_datapoints_accepted_total{f}[$__range]))",
+          "hide": false,
+          "legendFormat": "in",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH(f={job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\", stage=~\".*infer\",query_key=~\"$query_key\"})\nsum by (stage) (increase(vmanomaly_model_datapoints_produced_total{f}[$__range]))",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "out",
+          "refId": "A"
+        }
+      ],
+      "title": "Datapoints IO Inference",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "Total rows accepted by models, by stage, within selected time range",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 7,
+        "y": 89
+      },
+      "id": 73,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "sum by (stage) (increase(vmanomaly_model_datapoints_accepted_total{job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"}[$__range]))",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Datapoints accepted",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS:text}"
+      },
+      "description": "How long average model run took , in seconds",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "fit"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 11,
+        "y": 89
+      },
+      "id": 103,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "WITH (f = {job=~\"$job\",instance=~\"$instance\",preset=~\"$preset\",scheduler_alias=~\"$scheduler_alias\",model_alias=~\"$model_alias\",query_key=~\"$query_key\"})\navg by (stage) (1000 * ( \n    increase(vmanomaly_model_run_duration_seconds_sum{f}[$__range]) / \n    increase(vmanomaly_model_run_duration_seconds_count{f}[$__range])\n))",
+          "format": "time_series",
+          "instant": false,
+          "interval": "",
+          "legendFormat": "{{stage}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Avg. model run time",
+      "type": "stat"
+    }
+  ],
+  "refresh": "off",
+  "schemaVersion": 40,
+  "tags": [
+    "vmanomaly"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "description": "Select the Prometheus data source for retrieving self-monitoring metrics from the VictoriaMetrics Anomaly Detection service.",
+        "includeAll": false,
+        "label": "Data Source",
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS:text}"
+        },
+        "definition": "label_values(vmanomaly_start_time_seconds, job)",
+        "description": "Select what jobs produced self-monitoring metrics. By default, `vmanomaly` will be used, if not overridden in push or pull options of a config.",
+        "includeAll": true,
+        "label": "Job",
+        "multi": true,
+        "name": "job",
+        "options": [],
+        "query": {
+          "query": "label_values(vmanomaly_start_time_seconds, job)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(vmanomaly_start_time_seconds{job=~\"$job\"},instance)",
+        "description": "Select particular instances of running VictoriaMetrics Anomaly Detection service",
+        "includeAll": true,
+        "multi": true,
+        "name": "instance",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(vmanomaly_start_time_seconds{job=~\"$job\"},instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS:text}"
+        },
+        "definition": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\"},preset)",
+        "description": "Select the presets of VictoriaMetrics Anomaly Detection. See the page https://docs.victoriametrics.com/anomaly-detection/presets/",
+        "includeAll": true,
+        "label": "Preset",
+        "multi": true,
+        "name": "preset",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\"},preset)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\"},scheduler_alias)",
+        "description": "See `schedulers` config section - https://docs.victoriametrics.com/anomaly-detection/components/scheduler/",
+        "includeAll": true,
+        "label": "Scheduler",
+        "multi": true,
+        "name": "scheduler_alias",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\"},scheduler_alias)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS:text}"
+        },
+        "definition": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\"},query_key)",
+        "description": "Select query aliases found in `queries` arg of a `reader` config section - https://docs.victoriametrics.com/anomaly-detection/components/reader/",
+        "includeAll": true,
+        "label": "Query key",
+        "multi": true,
+        "name": "query_key",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\"},query_key)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"},model_alias)",
+        "description": "See `models` section of a config - https://docs.victoriametrics.com/anomaly-detection/components/models/",
+        "includeAll": true,
+        "label": "Model Alias",
+        "multi": true,
+        "name": "model_alias",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(vmanomaly_model_runs_skipped_total{job=~\"$job\", instance=~\"$instance\", preset=~\"$preset\", scheduler_alias=~\"$scheduler_alias\", query_key=~\"$query_key\"},model_alias)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "VictoriaMetrics - vmanomaly - self-monitoring",
+  "uid": "vmanomaly",
+  "version": 3,
+  "weekStart": "",
+  "gnetId": 22337
+}

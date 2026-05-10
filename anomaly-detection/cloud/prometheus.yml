@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  # Local self-monitoring metrics for the cloud-backed demo services.
+  - job_name: "vmagent"
+    static_configs:
+      - targets: ["vmagent:8429"]
+
+  - job_name: "vmanomaly"
+    static_configs:
+      - targets: ["vmanomaly:8490"]
+
+  - job_name: "alertmanager"
+    static_configs:
+      - targets: ["alertmanager:9093"]
+
+  - job_name: "vmalert"
+    static_configs:
+      - targets: ["vmalert:8880"]

@@ -1,0 +1,140 @@
+settings:
+  n_workers: 1
+  anomaly_score_outside_data_range: 3
+  restore_state: true
+
+schedulers:
+  online:
+    class: "periodic"
+    infer_every: "30s"
+    fit_every: "300d"
+    fit_window: "24h"
+
+  offline:
+    class: "periodic"
+    infer_every: "1m"
+    fit_every: "24h"
+    fit_window: "14d"
+
+  backfill_online:
+    class: "backtesting"
+    from_iso: "%{VMANOMALY_BACKFILL_FROM}"
+    to_iso: "%{VMANOMALY_BACKFILL_TO}"
+    fit_every: "100d"
+    fit_window: "24h"
+    inference_only: true
+    infer_every: "1h"
+    exact: true
+    n_jobs: 1
+
+  backfill_offline:
+    class: "backtesting"
+    from_iso: "%{VMANOMALY_BACKFILL_FROM}"
+    to_iso: "%{VMANOMALY_BACKFILL_TO}"
+    fit_every: "24h"
+    fit_window: "14d"
+    inference_only: true
+    n_jobs: 1
+
+models:
+  # Fast online baseline for abrupt spikes and step changes.
+  mad_latency_and_errors:
+    class: "mad_online"
+    decay: 0.93
+    threshold: 4
+    clip_predictions: true
+    provide_series: ["y", "anomaly_score", "yhat", "yhat_lower", "yhat_upper"]
+    schedulers: [online, backfill_online]
+    queries: [checkout_latency_p95, payment_error_ratio]
+
+  # Seasonal quantiles make latency bands easier to explain in a live demo.
+  seasonal_latency_band:
+    class: "quantile_online"
+    quantiles: [0.25, 0.5, 0.75]
+    iqr_threshold: 2
+    seasonal_interval: "7d"
+    min_subseason: "1h"
+    global_smoothing: 0.05
+    decay: 0.93
+    clip_predictions: true
+    provide_series: ["y", "anomaly_score", "yhat", "yhat_lower", "yhat_upper"]
+    schedulers: [online, backfill_online]
+    queries: [checkout_latency_p95]
+
+  # Traffic has strong calendar structure, so keep one offline model for it.
+  prophet_traffic:
+    class: "prophet"
+    forecast_at: ["1h", "6h"]
+    args:
+      interval_width: 0.99
+      weekly_seasonality: false
+      daily_seasonality: false
+      yearly_seasonality: false
+      seasonality_mode: additive
+      growth: flat
+    seasonalities:
+      - name: "weekly"
+        period: 7
+        fourier_order: 24
+        prior_scale: 10
+        mode: "additive"
+      - name: "daily"
+        period: 1
+        fourier_order: 12
+        prior_scale: 10
+        mode: "additive"
+    compression:  # downsample input data to reduce CPU/RAM load
+      window: '30m'  # downsample to 30-minute intervals
+      agg_method: 'mean'  # use mean aggregation within each window
+      adjust_boundaries: true  # adjust yhat_lower/yhat_upper after downsampling
+    provide_series: ["y", "anomaly_score", "yhat", "yhat_lower", "yhat_upper"]
+    schedulers: [offline, backfill_offline]
+    queries: [checkout_request_rate]
+
+reader:
+  datasource_url: "http://victoriametrics:8428/"
+  sampling_period: "60s"
+  max_points_per_query: 15000
+  queries:
+    checkout_latency_p95:
+      expr: |
+        max(apm_http_server_request_duration_seconds_p95{
+          service_namespace="shop",
+          service_name="checkout-api",
+          http_route="/checkout"
+        }) without (service_version)
+      data_range: [0, "inf"]
+
+    checkout_request_rate:
+      expr: |
+        sum(rate(apm_http_server_request_count_total{
+          service_namespace="shop",
+          service_name="checkout-api",
+          http_route="/checkout"
+        }[2m])) without (service_version)
+      data_range: [0, "inf"]
+
+    payment_error_ratio:
+      expr: |
+        max(apm_rpc_client_error_ratio{
+          service_namespace="shop",
+          service_name="checkout-api",
+          peer_service="payment-service"
+        }) without (service_version)
+      data_range: [0, 1]
+
+writer:
+  # Write through vmagent so large backtesting output bursts can be buffered
+  # and rate-limited before reaching VictoriaMetrics.
+  datasource_url: "http://vmagent:8429/"
+  metric_format:
+    __name__: "otel_apm_$VAR"
+    for: "$QUERY_KEY"
+
+server:
+  # already does what monitoring.pull does, exposing a /metrics endpoint with self-monitoring data
+  addr: "0.0.0.0"
+  port: 8490
+  # if set to true, UI will use connection settings from reader configuration below when connecting to data sources, 
+  #allowing it to connect with the same credentials, TLS settings, etc. without requiring having vmauth in front of both UI and data sources.
+  use_reader_connection_settings: true

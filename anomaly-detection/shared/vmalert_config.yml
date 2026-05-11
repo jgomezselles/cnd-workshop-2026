@@ -1,0 +1,14 @@
+groups:
+  - name: vmanomaly-otel-apm
+    interval: 30s
+    rules:
+      - alert: APMAnomalyScoreHigh
+        expr: 'max without (model_alias, scheduler_alias) (max_over_time(otel_apm_anomaly_score[2m])) > 1'
+        for: 1m
+        keep_firing_for: 5m
+        labels:
+          severity: warning
+          demo: "otel-apm"
+        annotations:
+          summary: 'High anomaly score for {{ $labels.service_name }} / {{ $labels.for }}'
+          description: 'instance={{ $labels.instance }}, flow={{ $labels.business_flow }}, score={{ $value }}'

@@ -1,0 +1,208 @@
+name: vmanomaly-otel-apm-cloud
+
+# Cloud variant of the OTEL APM anomaly detection demo:
+# - does not start a local VictoriaMetrics single-node service;
+# - by default vmanomaly reads and writes through the same Cloud tenant so the
+#   path can be verified end to end; later, read/write tenants can be split;
+# - vmanomaly and the optional dataloader write to local vmagent; vmagent buffers,
+#   rate-limits, and forwards to VictoriaMetrics Cloud;
+# - the dataloader writes the same synthetic dataset as the local stack, but
+#   targets the cloud tenant before vmanomaly starts.
+
+services:
+  vmagent:
+    container_name: otel-apm-vmagent-cloud
+    image: victoriametrics/vmagent:v1.140.0
+    ports:
+      - "18429:8429"
+    volumes:
+      - vmagentdata-cloud:/vmagentdata
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../shared/vmagent-relabel.yml:/etc/vmagent/relabel.yml:ro
+      - ../.secret/BEARER_TOKEN_WRITE:/run/secrets/vm_cloud_write_bearer_token:ro
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.tmpDataPath=/vmagentdata"
+      - "--remoteWrite.url=${VM_CLOUD_REMOTE_WRITE_URL:-}"
+      - "--remoteWrite.relabelConfig=/etc/vmagent/relabel.yml"
+      - "--remoteWrite.bearerTokenFile=/run/secrets/vm_cloud_write_bearer_token"
+      # Accept /insert/<tenant>/... writes from vmanomaly and convert tenant
+      # IDs to vm_account_id/vm_project_id before forwarding.
+      - "--enableMultitenantHandlers"
+      # Scraped self-monitoring metrics do not pass through /insert/<tenant>,
+      # so attach the configured write tenant before remote write.
+      - "--remoteWrite.label=vm_account_id=${VM_CLOUD_WRITE_ACCOUNT_ID:-0}"
+      - "--remoteWrite.label=vm_project_id=${VM_CLOUD_WRITE_PROJECT_ID:-0}"
+      # Smooth out large backtesting bursts before they hit VictoriaMetrics Cloud.
+      - "--remoteWrite.rateLimit=${VMAGENT_RATE_LIMIT:-1048576}"
+      - "--remoteWrite.maxDiskUsagePerURL=${VMAGENT_MAX_DISK_PER_URL:-2GB}"
+    networks:
+      - otel_apm_cloud_net
+    restart: unless-stopped
+
+  dataloader:
+    container_name: otel-apm-dataloader-cloud
+    # TODO: change version to victoriametrics/vmanomaly:vx.y.z after new release
+    image: victoriametrics/vmanomaly:v1.29.4-rc1
+    platform: "linux/amd64"
+    profiles: [ "seed" ]
+    depends_on:
+      vmagent:
+        condition: service_started
+    environment:
+      # Reuse dataloader_config.yml for identical synthetic data while
+      # overriding only the VictoriaMetrics destination.
+      DATALOADER_DATASOURCE_URL: http://vmagent:8429/
+      DATALOADER_TENANT_ID: ${VM_CLOUD_DATALOADER_TENANT_ID:-0:101}
+    volumes:
+      - ../shared/dataloader_config.yml:/demo/dataloader_config.yml:ro
+      - ../shared/mock_data_loader.py:/demo/mock_data_loader.py:ro
+    entrypoint:
+      - "python"
+      - "/demo/mock_data_loader.py"
+      - "/demo/dataloader_config.yml"
+      - "120"
+    networks:
+      - otel_apm_cloud_net
+    restart: "no"
+
+  vmanomaly:
+    container_name: otel-apm-vmanomaly-cloud
+    # TODO: change version to victoriametrics/vmanomaly:vx.y.z after new release
+    image: victoriametrics/vmanomaly:v1.29.4-rc1
+    platform: "linux/amd64"
+    user: "0:0"
+    depends_on:
+      vmagent:
+        condition: service_started
+    ports:
+      - "18490:8490"
+    environment:
+      VM_LICENSE_FILE: /run/secrets/vmanomaly_license
+      VM_CLOUD_DATASOURCE_URL: ${VM_CLOUD_DATASOURCE_URL:-}
+      VM_CLOUD_READ_TENANT_ID: ${VM_CLOUD_READ_TENANT_ID:-0:101}
+      VM_CLOUD_WRITE_TENANT_ID: ${VM_CLOUD_WRITE_TENANT_ID:-0:101}
+      VM_CLOUD_WRITE_TENANT_ID_ESCAPED: ${VM_CLOUD_WRITE_TENANT_ID_ESCAPED:-0%3A101}
+      VM_CLOUD_GRAFANA_DATASOURCE_URL: ${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}
+      VMANOMALY_MODEL_DUMPS_DIR: /mnt/models/vmanomaly
+      VMANOMALY_DATA_DUMPS_DIR: /mnt/data/vmanomaly
+      VMANOMALY_MEMBERS_COUNT: "1"
+      VMANOMALY_MEMBER_NUM: "0"
+      VMANOMALY_REPLICATION_FACTOR: "1"
+      VMANOMALY_SPLIT_BY: COMPLETE
+      VMANOMALY_BACKFILL_FROM: ${VMANOMALY_BACKFILL_FROM:-1970-01-01T00:00:00Z}
+      VMANOMALY_BACKFILL_TO: ${VMANOMALY_BACKFILL_TO:-1970-01-01T00:00:00Z}
+      # Lock the UI datasource selector to the same Cloud endpoint used by the
+      # reader. Auth/TLS are proxied from reader settings by server config.
+      VMANOMALY_UI_DATASOURCE_URL: ${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}
+      VMANOMALY_UI_DATASOURCE_TYPE: vm
+    volumes:
+      - ./vmanomaly_config.yml:/config/vmanomaly_config.yml:ro
+      - ../.secret/license:/run/secrets/vmanomaly_license:ro
+      - ../.secret/BEARER_TOKEN_READ:/run/secrets/vm_cloud_read_bearer_token:ro
+      - vmanomaly-models-cloud:/mnt/models
+      - vmanomaly-data-cloud:/mnt/data
+    command:
+      - "/config/vmanomaly_config.yml"
+      - "--loggerLevel=INFO"
+      - "--watch"
+    networks:
+      - otel_apm_cloud_net
+    restart: unless-stopped
+
+  vmalert:
+    container_name: otel-apm-vmalert-cloud
+    image: victoriametrics/vmalert:v1.140.0
+    depends_on:
+      vmagent:
+        condition: service_started
+      alertmanager:
+        condition: service_started
+    ports:
+      - "18880:8880"
+    volumes:
+      - ../shared/vmalert_config.yml:/etc/alerts/alerts.yml:ro
+      - ../.secret/BEARER_TOKEN_WRITE:/run/secrets/vm_cloud_write_bearer_token:ro
+    command:
+      - "--datasource.url=${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}"
+      - "--datasource.bearerTokenFile=/run/secrets/vm_cloud_write_bearer_token"
+      - "--remoteRead.url=${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}"
+      - "--remoteRead.bearerTokenFile=/run/secrets/vm_cloud_write_bearer_token"
+      # Persist vmalert alert state through vmagent into the configured Cloud tenant.
+      - "--remoteWrite.url=http://vmagent:8429/insert/${VM_CLOUD_WRITE_TENANT_ID:-0:101}/prometheus"
+      - "--notifier.url=http://alertmanager:9093/"
+      - "--rule=/etc/alerts/*.yml"
+      - "--httpListenAddr=:8880"
+      - "--external.url=http://127.0.0.1:13000"
+    networks:
+      - otel_apm_cloud_net
+    restart: unless-stopped
+
+  alertmanager:
+    container_name: otel-apm-alertmanager-cloud
+    image: prom/alertmanager:v0.32.0
+    depends_on:
+      alert-webhook:
+        condition: service_started
+    ports:
+      - "19093:9093"
+    volumes:
+      - ../shared/alertmanager.yml:/config/alertmanager.yml:ro
+    command:
+      - "--config.file=/config/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+      - "--web.listen-address=:9093"
+    networks:
+      - otel_apm_cloud_net
+    restart: unless-stopped
+
+  alert-webhook:
+    container_name: otel-apm-alert-webhook-cloud
+    image: python:3.13-alpine
+    ports:
+      - "15001:5001"
+    volumes:
+      - ../shared/alert_webhook.py:/app/alert_webhook.py:ro
+    command:
+      - "python"
+      - "/app/alert_webhook.py"
+    networks:
+      - otel_apm_cloud_net
+    restart: unless-stopped
+
+  grafana:
+    container_name: otel-apm-grafana-cloud
+    image: grafana/grafana-oss:12.4.3
+    ports:
+      - "13000:3000"
+    environment:
+      GF_INSTALL_PLUGINS: victoriametrics-metrics-datasource
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_DISABLE_SIGNOUT_MENU: "true"
+      GF_USERS_DEFAULT_THEME: dark
+      # Used by Grafana provisioning to query VictoriaMetrics Cloud for both
+      # anomaly-score and vmanomaly self-monitoring dashboards.
+      VM_CLOUD_GRAFANA_DATASOURCE_URL: ${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}
+      VM_CLOUD_READ_GRAFANA_DATASOURCE_URL: ${VM_CLOUD_READ_GRAFANA_DATASOURCE_URL:-}
+      VM_CLOUD_READ_BEARER_TOKEN: ${VM_CLOUD_READ_BEARER_TOKEN:-}
+      VM_CLOUD_WRITE_BEARER_TOKEN: ${VM_CLOUD_WRITE_BEARER_TOKEN:-}
+    volumes:
+      - grafanadata-cloud:/var/lib/grafana
+      - ./provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ../shared/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../shared/provisioning/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - otel_apm_cloud_net
+    restart: unless-stopped
+
+volumes:
+  grafanadata-cloud: {}
+  vmagentdata-cloud: {}
+  vmanomaly-models-cloud: {}
+  vmanomaly-data-cloud: {}
+
+networks:
+  otel_apm_cloud_net:
+    driver: bridge

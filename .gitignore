@@ -1,0 +1,51 @@
+# IDE files
+
+.idea/*
+.idea/*/
+!.idea/codeStyles
+!.idea/copyright
+
+.vscode
+
+# Credentials and secrets
+
+secret
+secrets
+.secret
+**/.secret/
+*.pem
+*.key
+*.p12
+*.pfx
+*.token
+*.secret
+
+# Local development
+.env
+.env.*
+!.env.example
+/local/
+.devcontainer/
+.uv-cache/
+.venv-format/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.coverage
+.coverage.*
+htmlcov/
+*.log
+
+# Claude Code
+AGENTS.md
+CLAUDE.md
+.claude
+.mcp.json
+DEVELOPMENT.md
+
+# Codex
+.codex

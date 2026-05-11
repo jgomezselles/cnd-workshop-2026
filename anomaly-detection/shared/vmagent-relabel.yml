@@ -1,0 +1,24 @@
+# Normalize vmanomaly scheduler aliases before remote write.
+#
+# This makes backtesting and live output share the same stored labelset,
+# imitating that the data was produced by periodic schedulers all along:
+# - backfill_online become scheduler_alias="online"
+# - backfill_offline become scheduler_alias="offline"
+#
+# Workshop rationale: the backtesting schedulers prefill historical output so
+# dashboards look alive immediately. In a real long-running deployment the
+# periodic production schedulers would own these series by the end of the day.
+# We relabel them here to imitate that steady-state view and keep the anomaly
+# model output labelsets stable when the demo "merges" backfill and
+# production scheduler output.
+#
+# Apply by scheduler alias only. This intentionally covers all metrics produced
+# by backtesting schedulers, so no stored series keeps a backtesting-specific
+# scheduler_alias.
+- if: '{scheduler_alias="backfill_online"}'
+  target_label: scheduler_alias
+  replacement: "online"
+
+- if: '{scheduler_alias="backfill_offline"}'
+  target_label: scheduler_alias
+  replacement: "offline"

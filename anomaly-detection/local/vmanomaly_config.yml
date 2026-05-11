@@ -128,7 +128,7 @@ writer:
   # and rate-limited before reaching VictoriaMetrics.
   datasource_url: "http://vmagent:8429/"
   metric_format:
-    __name__: "$VAR"
+    __name__: "otel_apm_$VAR"
     for: "$QUERY_KEY"
 
 server:

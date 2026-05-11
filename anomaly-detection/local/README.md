@@ -83,7 +83,8 @@ After vmanomaly starts, use Grafana to inspect both model outputs and service
 health:
 
 - The anomaly score dashboard shows `anomaly_score`, `y`, `yhat`, and
-  confidence bands for each configured query/model. Full guide:
+  confidence bands for each configured query/model. In this workshop these
+  output metric names use the `otel_apm_` prefix. Full guide:
   https://docs.victoriametrics.com/anomaly-detection/presets/#grafana-dashboard
 - The self-monitoring dashboard shows vmanomaly runtime health, scheduler/model
   run timing, errors, and data flow metrics. Full guide:

@@ -136,7 +136,7 @@ writer:
   tenant_id: "%{VM_CLOUD_WRITE_TENANT_ID}"
   timeout: "30s"
   metric_format:
-    __name__: "$VAR"
+    __name__: "otel_apm_$VAR"
     for: "$QUERY_KEY"
 
 

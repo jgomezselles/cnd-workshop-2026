@@ -3,7 +3,7 @@ groups:
     interval: 30s
     rules:
       - alert: APMAnomalyScoreHigh
-        expr: 'max_over_time(anomaly_score{for=~"checkout_latency_p95|checkout_request_rate|payment_error_ratio"}[2m]) > 1'
+        expr: 'max without (model_alias, scheduler_alias) (max_over_time(otel_apm_anomaly_score[2m])) > 1'
         for: 1m
         keep_firing_for: 5m
         labels:

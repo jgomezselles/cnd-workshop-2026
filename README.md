@@ -28,13 +28,6 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
 
 # TODOs
 - [ ] Presentation
-- [X] Create repo
-- [X] Create workshop organization
-  - [X] Provide credits for the cluster
-  - [ ] Run cluster 2 days before the WS
-  - [ ] Invite users into the org
-  - [ ] Assign tenants
-- [ ] Add pics
 
 # Requirements
 
@@ -52,6 +45,8 @@ In this first part, we will first cover the fundamentals of OpenTelemetry, and h
 OpenTelemetry Collector to gather k8s platform metrics. After that, we will talk about
 Instrumentation, and deploy a demo app. We will be sending metrics and logs to a remote backend,
 and finally observe our app by integrating with Grafana.
+
+![Logs Dashboard](1_3_Instrumentation/pics/app.png)
 
 ## [1. OpenTelemetry Introduction](1_1_OpenTelemetry_Intro)
 
@@ -101,3 +96,12 @@ provisioned as a ConfigMap, with panels for response time graphs, success rate g
 per-stream log hit counts. We will finish by inspecting and editing panels to understand the
 MetricsQL and LogsQL queries behind each visualization, and try creating a new panel from scratch.
 
+## Next steps
+
+The following (not-documented-but-hopefully-soon) repo contains this app with the 3 backends to be run
+locally. Feel free to download and play with it! https://github.com/jgomezselles/vm-app-stack
+
+# Part II
+
+Next part deals with **Anomaly Detection**. Move to the [anomaly-detection](anomaly-detection)
+folder to continue!

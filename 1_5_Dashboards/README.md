@@ -130,3 +130,5 @@ _stream: {k8s.container.name="server-mock"} AND "GET" | _time:10s
 
 
 ## CONGRATULATIONS! NOW YOU'RE AN OBSERVABILITY EXPERT!
+
+Part I is over! Go back to [Index](../README.md)

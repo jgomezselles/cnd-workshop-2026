@@ -50,9 +50,9 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
 
 # Part I
 
-## [OpenTelemetry Introduction](1-1-OpenTelemetry-Intro/Readme.md)
-## [Forwarding Metrics](1-2-Forwarding-metrics/Readme.md)
-## [Instrumentation](1-3-Instrumentation/Readme.md)
-## [Forwarding Logs](1-4-Forwarding-logs/Readme.md)
-## [Dashboards](1-5-Dashboards/Readme.md)
+## [OpenTelemetry Introduction](1_1_OpenTelemetry_Intro/Readme.md)
+## [Forwarding Metrics](1_2_Forwarding_Metrics/Readme.md)
+## [Instrumentation](1_3_Instrumentation/Readme.md)
+## [Forwarding Logs](1_4_Forwarding_Logs/Readme.md)
+## [Dashboards](1_5_Dashboards/Readme.md)
 

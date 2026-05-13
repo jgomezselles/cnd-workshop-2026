@@ -131,3 +131,6 @@ This will send requests at a rate `r=10` rps for time `t=100`s (and print to con
 
 > **EXERCISE**: Let's use the `Autocomplete` functionality or navigate back to the `Cardinality explorer`
 > to discover which new metrics we have, and how the kubelet is exposing more containers now.
+
+# Continue this workshop
+Part 3 is over! Go back to [Index](../README.md#part-i)

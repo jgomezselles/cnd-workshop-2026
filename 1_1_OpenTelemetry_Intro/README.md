@@ -139,4 +139,5 @@ metrics pipeline has been automatically modified.
 
 </details>
 
-
+# Continue this workshop
+Part 1 is over! Go back to [Index](../README.md#part-i)

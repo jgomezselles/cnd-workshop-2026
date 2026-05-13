@@ -107,3 +107,6 @@ to perform operations.
 
 > **EXERCISE**: Knowing that the `count()`stats operations exists. Could you tell how many PUT operations
 > occurred during the last 10 seconds?
+
+# Continue this workshop
+Part 4 is over! Go back to [Index](../README.md#part-i)

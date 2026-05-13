@@ -132,3 +132,6 @@ I can check my memory usage percentage by:
 
 > **EXERCISE**: Feel free to use the `Autocomplete` functionality or navigate back to the `Cardinality explorer`
 > to discover more metrics available!
+
+# Continue this workshop
+Part 2 is over! Go back to [Index](../README.md#part-i)

@@ -55,7 +55,7 @@ manually instrumented with OpenTelemetry. If you're curious about how, you can c
 [`olly`](https://github.com/jgomezselles/hermes/tree/main/src/o11y) folder  or how instruments
 are created in the [`stats`](https://github.com/jgomezselles/hermes/blob/main/src/stats/stats.cpp) file.
 
-In order to install it, we will apply now the following changes via the file [step-3.yaml](helm/values/step-3.yaml):
+In order to install it, we will apply now the following changes via the file [step-3.yaml](../helm/values/step-3.yaml):
 
 ## Application
 

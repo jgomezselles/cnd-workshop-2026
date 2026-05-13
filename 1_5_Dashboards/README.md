@@ -9,7 +9,7 @@ For this case, we need a dashboard. In the next step, we will install [`Grafana`
 Another option would be using [`Perses`](https://perses.dev/), a novel CNCF project that is gaining
 traction.
 
-To install Grafana, we will use the [step-5.yaml](helm/values/step-5.yaml) file.
+To install Grafana, we will use the [step-5.yaml](../helm/values/step-5.yaml) file.
 
 ```yaml
 grafana:
@@ -23,7 +23,7 @@ Here, we are installing the VictoriaMetrics and VictoriaLogs
 [plugins](https://grafana.com/orgs/victoriametrics/plugins) directly, so we don't need to add them
 manually.
 
-> Note: Also mind that the following is applied (from the main [values.yaml](helm/cnd-demo/values.yaml)
+> Note: Also mind that the following is applied (from the main [values.yaml](../helm/cnd-demo/values.yaml)
 file) to ensure we can load the dashboard.
 
 ```yaml

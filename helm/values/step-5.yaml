@@ -1,5 +1,7 @@
 grafana:
   enabled: true
+  image:
+    tag: "12.2.5"
   adminPassword: admin
   plugins:
     - victoriametrics-metrics-datasource

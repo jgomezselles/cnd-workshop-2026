@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -36,8 +36,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "hermes-prometheus-datasource"
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "${Metrics_datasource}"
       },
       "description": "Shows the percentage of requests that were answered with expected result codes",
       "fieldConfig": {
@@ -51,7 +51,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red"
+                "color": "red",
+                "value": 0
               },
               {
                 "color": "green",
@@ -86,15 +87,16 @@
         "sizing": "auto",
         "text": {}
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.2.5",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "hermes-prometheus-datasource"
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "${Metrics_datasource}"
           },
           "editorMode": "code",
           "expr": "sum(hermes_responses_rcv_ok{id=~\"$request_id\"}) / sum(hermes_requests_sent{id=~\"$request_id\"}) *100",
+          "format": "time_series",
           "instant": false,
           "range": true,
           "refId": "A"
@@ -106,8 +108,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "hermes-prometheus-datasource"
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "${Metrics_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -119,7 +121,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               }
             ]
           }
@@ -150,15 +153,16 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.2.5",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "hermes-prometheus-datasource"
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "${Metrics_datasource}"
           },
           "editorMode": "code",
-          "expr": "rate(sum(hermes_requests_sent{id=~\"$request_id\"}))",
+          "expr": "avg(rate(sum(hermes_requests_sent{id=~\"$request_id\"}[5m])))",
+          "format": "time_series",
           "instant": false,
           "range": true,
           "refId": "A"
@@ -170,8 +174,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "hermes-prometheus-datasource"
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "${Metrics_datasource}"
       },
       "description": "This panel shows the response times in ms of all requests sent by hermes. Only those of expected result codes received are accounted here.",
       "fieldConfig": {
@@ -203,6 +207,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -224,7 +229,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "red",
@@ -256,15 +262,16 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.2.5",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "hermes-prometheus-datasource"
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "${Metrics_datasource}"
           },
           "editorMode": "code",
           "expr": "hermes_response_time_ok_ms_sum{id=~\"$request_id\"}[1m] / hermes_response_time_ok_ms_count{id=~\"$request_id\"}[1m]",
+          "format": "time_series",
           "instant": false,
           "interval": "",
           "legendFormat": "{{id}}",
@@ -278,8 +285,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "hermes-prometheus-datasource"
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "${Metrics_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -291,7 +298,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               }
             ]
           }
@@ -322,15 +330,16 @@
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.2.5",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "hermes-prometheus-datasource"
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "${Metrics_datasource}"
           },
           "editorMode": "code",
-          "expr": "rate(sum(hermes_responses_rcv_ok{id=~\"$request_id\"}))",
+          "expr": "avg(rate(sum(hermes_responses_rcv_ok{id=~\"$request_id\"}[5m])))",
+          "format": "time_series",
           "instant": false,
           "range": true,
           "refId": "A"
@@ -342,8 +351,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "hermes-prometheus-datasource"
+        "type": "victoriametrics-metrics-datasource",
+        "uid": "${Metrics_datasource}"
       },
       "description": "This gauge shows the latest average of response times in ms of all requests sent by hermes. Only those of expected result codes received are accounted here.",
       "fieldConfig": {
@@ -356,7 +365,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               }
             ]
           },
@@ -388,15 +398,16 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.2.5",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "hermes-prometheus-datasource"
+            "type": "victoriametrics-metrics-datasource",
+            "uid": "${Metrics_datasource}"
           },
           "editorMode": "code",
           "expr": "avg(hermes_response_time_ok_ms_sum{id=~\"$request_id\"}[1m] / hermes_response_time_ok_ms_count{id=~\"$request_id\"}[1m])",
+          "format": "time_series",
           "instant": false,
           "interval": "",
           "legendFormat": "__auto",
@@ -409,328 +420,12 @@
       "type": "stat"
     },
     {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 13
-      },
-      "id": 19,
-      "panels": [
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "description": "Shows the percentage of requests that were answered with expected result codes",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "decimals": 2,
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "red"
-                  },
-                  {
-                    "color": "green",
-                    "value": 99
-                  }
-                ]
-              },
-              "unit": "percent"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 12,
-            "w": 4,
-            "x": 0,
-            "y": 14
-          },
-          "id": 16,
-          "options": {
-            "minVizHeight": 75,
-            "minVizWidth": 75,
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showThresholdLabels": false,
-            "showThresholdMarkers": true,
-            "sizing": "auto",
-            "text": {}
-          },
-          "pluginVersion": "12.0.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "victoriametrics-metrics-datasource",
-                "uid": "P4169E866C3094E38"
-              },
-              "editorMode": "code",
-              "expr": "sum(traces.span.metrics.calls{span.name=~\"$request_id\", status.code=\"STATUS_CODE_OK\", span.kind=\"SPAN_KIND_CLIENT\"} ) / sum(traces.span.metrics.calls{span.name=~\"$request_id\", span.kind=\"SPAN_KIND_CLIENT\"}) *100",
-              "format": "time_series",
-              "legendFormat": "__auto",
-              "range": true,
-              "refId": "B"
-            }
-          ],
-          "title": "Success ratio (last)",
-          "transparent": true,
-          "type": "gauge"
-        },
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "description": "This gauge shows the latest average of response times in ms of all requests sent by hermes. Only those of expected result codes received are accounted here.",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  }
-                ]
-              },
-              "unit": "ms"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 4,
-            "y": 14
-          },
-          "id": 17,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showPercentChange": false,
-            "textMode": "auto",
-            "wideLayout": true
-          },
-          "pluginVersion": "12.0.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "victoriametrics-metrics-datasource",
-                "uid": "P4169E866C3094E38"
-              },
-              "editorMode": "code",
-              "expr": "avg(traces.span.metrics.duration_sum{span.name=~\"$request_id\"}[1m] / traces.span.metrics.duration_count{span.name=~\"$request_id\"}[1m])",
-              "format": "time_series",
-              "legendFormat": "__auto",
-              "range": true,
-              "refId": "Response times"
-            }
-          ],
-          "title": "RT",
-          "transparent": true,
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "description": "This panel shows the response times in ms of all requests sent by hermes. Only those of expected result codes received are accounted here.",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "Response time (ms)",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "ms"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 12,
-            "x": 8,
-            "y": 14
-          },
-          "id": 1,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "right",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "12.0.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "victoriametrics-metrics-datasource",
-                "uid": "P4169E866C3094E38"
-              },
-              "editorMode": "code",
-              "expr": "traces.span.metrics.duration_sum{span.name=~\"$request_id\"}[1m] / traces.span.metrics.duration_count{span.name=~\"$request_id\"}[1m]",
-              "format": "time_series",
-              "legendFormat": "{{span.name}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Response times (ms)",
-          "transparent": true,
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "victoriametrics-metrics-datasource",
-            "uid": "P4169E866C3094E38"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 4,
-            "y": 49
-          },
-          "id": 18,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showPercentChange": false,
-            "textMode": "value",
-            "wideLayout": true
-          },
-          "pluginVersion": "12.0.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "victoriametrics-metrics-datasource",
-                "uid": "P4169E866C3094E38"
-              },
-              "editorMode": "code",
-              "expr": "sum(rate(traces.span.metrics.calls{span.name=~\"$request_id\"}))",
-              "format": "time_series",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "Requests sent/s",
-          "transparent": true,
-          "type": "stat"
-        }
-      ],
-      "title": "SPM - Span Metrics",
-      "type": "row"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 13
       },
       "id": 12,
       "panels": [],
@@ -740,7 +435,7 @@
     {
       "datasource": {
         "type": "victoriametrics-logs-datasource",
-        "uid": "PD775F2863313E6C7"
+        "uid": "${Logs_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -780,7 +475,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "green",
+                "value": 0
               },
               {
                 "color": "red",
@@ -795,7 +491,7 @@
         "h": 9,
         "w": 18,
         "x": 0,
-        "y": 15
+        "y": 14
       },
       "id": 21,
       "maxDataPoints": 75,
@@ -821,12 +517,12 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 200
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.2.5",
       "targets": [
         {
           "datasource": {
             "type": "victoriametrics-logs-datasource",
-            "uid": "PD775F2863313E6C7"
+            "uid": "${Logs_datasource}"
           },
           "editorMode": "code",
           "expr": "GET | stats by (_stream) count() hits | sort by (hits) desc limit 5",
@@ -841,7 +537,7 @@
     {
       "datasource": {
         "type": "victoriametrics-logs-datasource",
-        "uid": "PD775F2863313E6C7"
+        "uid": "${Logs_datasource}"
       },
       "fieldConfig": {
         "defaults": {},
@@ -849,9 +545,9 @@
       },
       "gridPos": {
         "h": 10,
-        "w": 8,
+        "w": 18,
         "x": 0,
-        "y": 24
+        "y": 23
       },
       "id": 9,
       "options": {
@@ -865,12 +561,12 @@
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
-      "pluginVersion": "12.0.2",
+      "pluginVersion": "12.2.5",
       "targets": [
         {
           "datasource": {
             "type": "victoriametrics-logs-datasource",
-            "uid": "PD775F2863313E6C7"
+            "uid": "${Logs_datasource}"
           },
           "editorMode": "code",
           "expr": "_stream: {k8s.container.name=\"server-mock\"} AND \"GET\" | _time:10s",
@@ -881,254 +577,60 @@
       "title": "GET logs - server",
       "transparent": true,
       "type": "logs"
-    },
-    {
-      "datasource": {
-        "type": "jaeger",
-        "uid": "P14D5514F5CCC0D1C"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto",
-              "wrapText": false
-            },
-            "filterable": false,
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 10,
-        "x": 8,
-        "y": 24
-      },
-      "id": 10,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "jaeger",
-            "uid": "P14D5514F5CCC0D1C"
-          },
-          "limit": 1000,
-          "minDuration": "5ms",
-          "operation": "get1",
-          "queryType": "search",
-          "refId": "A",
-          "service": "hermes"
-        }
-      ],
-      "title": "GET > 10ms",
-      "transparent": true,
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "jaeger",
-        "uid": "P14D5514F5CCC0D1C"
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 6,
-        "x": 0,
-        "y": 34
-      },
-      "id": 20,
-      "options": {
-        "edges": {},
-        "layoutAlgorithm": "layered",
-        "nodes": {},
-        "zoomMode": "cooperative"
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "jaeger",
-            "uid": "P14D5514F5CCC0D1C"
-          },
-          "limit": 1000,
-          "minDuration": "",
-          "operation": "get1",
-          "queryType": "dependencyGraph",
-          "refId": "A",
-          "service": "hermes"
-        }
-      ],
-      "title": "Service Graph",
-      "transparent": true,
-      "type": "nodeGraph"
-    },
-    {
-      "datasource": {
-        "type": "jaeger",
-        "uid": "P14D5514F5CCC0D1C"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "continuous-BlPu",
-            "seriesBy": "last"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "points",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 12,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "fieldMinMax": true,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 10,
-        "x": 8,
-        "y": 34
-      },
-      "id": 11,
-      "options": {
-        "legend": {
-          "calcs": [
-            "mean",
-            "last",
-            "max"
-          ],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "jaeger",
-            "uid": "P14D5514F5CCC0D1C"
-          },
-          "limit": 1000,
-          "minDuration": "",
-          "operation": "get1",
-          "queryType": "search",
-          "refId": "A",
-          "service": "hermes"
-        }
-      ],
-      "title": "GET > 10ms",
-      "transparent": true,
-      "type": "timeseries"
     }
   ],
   "preload": false,
   "refresh": "5s",
-  "schemaVersion": 41,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
           "text": "All",
-          "value": [
-            "$__all"
-          ]
+          "value": "$__all"
         },
         "datasource": {
-          "type": "prometheus",
-          "uid": "hermes-prometheus-datasource"
+          "type": "victoriametrics-metrics-datasource",
+          "uid": "${Metrics_datasource}"
         },
-        "definition": "label_values(id)",
+        "definition": "label_values(hermes_requests_sent,id)",
         "includeAll": true,
         "multi": true,
         "name": "request_id",
         "options": [],
         "query": {
-          "query": "label_values(id)",
-          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+          "qryType": 1,
+          "query": "label_values(hermes_requests_sent,id)",
+          "refId": "VariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
         "regex": "",
         "type": "query"
+      },
+      {
+        "current": {
+          "text": "victoriametrics-logs-datasource",
+          "value": "dflupiynqwsu8b"
+        },
+        "name": "Logs_datasource",
+        "options": [],
+        "query": "victoriametrics-logs-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "victoriametrics-metrics-datasource",
+          "value": "ffluovn57ftvkd"
+        },
+        "name": "Metrics_datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
       }
     ]
   },
@@ -1138,7 +640,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Hermes dashboard",
-  "uid": "hermes-dashboard-uid",
+  "title": "Hermes dashboard CND",
+  "uid": "adslpg9",
   "version": 1
 }

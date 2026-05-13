@@ -55,7 +55,10 @@ manually instrumented with OpenTelemetry. If you're curious about how, you can c
 [`olly`](https://github.com/jgomezselles/hermes/tree/main/src/o11y) folder  or how instruments
 are created in the [`stats`](https://github.com/jgomezselles/hermes/blob/main/src/stats/stats.cpp) file.
 
-In order to install it, we will apply now the following changes via the file [step-3.yaml](../helm/values/step-3.yaml):
+In order to install it, we will apply now the following changes via the file [step-3.yaml](../helm/values/step-3.yaml).
+
+![App](pics/app.png)
+
 
 ## Application
 
@@ -124,10 +127,10 @@ kubectl port-forward -n cnd-ws deployments/otelcol 55679:55679
 
 Let's run traffic in the background in a new console by:
 ```sh
-kubectl exec -n cnd-ws $(kubectl get pod -n cnd-ws -l app.kubernetes.io/name=hermes -o jsonpath='{.items[0].metadata.name}') -- hermes -r10 -p1 -t1000
+kubectl exec -n cnd-ws $(kubectl get pod -n cnd-ws -l app.kubernetes.io/name=hermes -o jsonpath='{.items[0].metadata.name}') -- hermes -r10 -p1 -t3900
 ```
 
-This will send requests at a rate `r=10` rps for time `t=100`s (and print to console stderr every `p=1`s).
+This will send requests at a rate `r=10` rps for time `t=3900`s (and prints to console stderr every `p=1`s).
 
 > **EXERCISE**: Let's use the `Autocomplete` functionality or navigate back to the `Cardinality explorer`
 > to discover which new metrics we have, and how the kubelet is exposing more containers now.

@@ -35,8 +35,6 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
   - [ ] Invite users into the org
   - [ ] Assign tenants
 - [ ] Add pics
-- [ ] Correct links to yamls
-- [ ] Correct pics links
 
 # Requirements
 
@@ -55,7 +53,7 @@ OpenTelemetry Collector to gather k8s platform metrics. After that, we will talk
 Instrumentation, and deploy a demo app. We will be sending metrics and logs to a remote backend,
 and finally observe our app by integrating with Grafana.
 
-## [OpenTelemetry Introduction](1_1_OpenTelemetry_Intro)
+## [1. OpenTelemetry Introduction](1_1_OpenTelemetry_Intro)
 
 Here, we will start with the basics: what OpenTelemetry is, a vendor-neutral collection of APIs,
 SDKs, and tools for generating, collecting, and exporting metrics, traces, and logs. We will then
@@ -65,7 +63,7 @@ Kubernetes via Helm using the contrib image. We will walk through the key config
 presets (`clusterMetrics`, `kubeletMetrics`, `kubernetesAttributes`) take care of the complex setup
 for us. We will finish with a first look at debugging the collector using the zpages extension.
 
-## [Forwarding Metrics](1_2_Forwarding_Metrics)
+## [2. Forwarding Metrics](1_2_Forwarding_Metrics)
 
 In section 2, we will connect our OTel Collector to a remote VictoriaMetrics Cloud backend using bearer
 token authentication and an `otlphttp` exporter. We will walk through obtaining credentials from
@@ -73,7 +71,7 @@ the Cloud console, plugging them into our values file, and upgrading the Helm re
 changes. Then, we will explore the collected Kubernetes metrics in the VictoriaMetrics UI (`vmui`),
 including a first look at cardinality and our first MetricsQL queries for CPU and memory usage.
 
-## [Instrumentation](1_3_Instrumentation)
+## [3. Instrumentation](1_3_Instrumentation)
 
 Now that we know the basics, we're ready to run our first app! we will explain the three main
 approaches to automatic OpenTelemetry instrumentation:
@@ -86,7 +84,7 @@ load generator instrumented by hand) and `ServerMock` (a Go service using auto-i
 environment variables). We will also extend the OTel Collector with traces and logs pipelines to
 receive the new signals from both apps.
 
-## [Forwarding Logs](1_4_Forwarding_Logs)
+## [4. Forwarding Logs](1_4_Forwarding_Logs)
 
 Now that we're experts on metrics, we will enable the `kubernetesEvents` and `logsCollection` presets
 to collect Kubernetes API events and container stdout logs via the `k8sobjectreceiver` and `filelogreceiver`.
@@ -95,7 +93,7 @@ via headers and stream field definitions to group logs by container name. Finall
 our logs in the VictoriaLogs UI and write our first LogsQL queries (time filters, keyword search,
 sorting, and `count()` stats).
 
-## [Dashboards](1_5_Dashboards)
+## [5. Dashboards](1_5_Dashboards)
 
 Finally, we will install Grafana with the `Prometheus` and `VictoriaLogs` connections and configure both
 as data sources using the Cloud integration guide. We will then load a pre-built Hermes dashboard

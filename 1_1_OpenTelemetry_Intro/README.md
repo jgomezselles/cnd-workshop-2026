@@ -57,6 +57,8 @@ You can inspect the full default configuration of the OTel collector helm chart 
 helm show values otelcol/opentelemetry-collector > otelcol-default.yaml
 ```
 
+![Tenant Selection](pics/otelcol.png)
+
 This dumps all available options with their defaults. The key sections to understand are:
 
 * **`receivers`**: define how telemetry data enters the collector (e.g., OTLP over gRPC on port 4317 or HTTP on port 4318)
@@ -65,12 +67,13 @@ This dumps all available options with their defaults. The key sections to unders
 * **`connectors`**: bridge two pipelines together; for example, `spanmetrics` derives RED metrics directly from traces
 * **`service.pipelines`**: wire the above components into named signal pipelines (metrics, traces, logs), each with its own chain of receivers → processors → exporters
 
-> **Why the contrib image?**
-> The standard `otel/opentelemetry-collector` ships only the core built-in components. We will use the
-> [`otel/opentelemetry-collector-contrib`](https://github.com/open-telemetry/opentelemetry-collector-contrib)
-> image, which bundles all community-contributed components. This is required for Kubernetes-specific
-> receivers and processors like `k8sclusterreceiver`, `kubeletMetrics` and `k8sattributesprocessor`, as well
-> as exporters for backends like VictoriaMetrics.
+Each of these big groups contain many configurable components:
+
+![Tenant Selection](pics/components.png)
+
+And pipelines allow us to define the path in which these components are put together:
+
+![Tenant Selection](pics/pipelines.png)
 
 ## Presets
 
@@ -79,7 +82,7 @@ configurations built into the OTel collector helm chart that handle the complex 
 components for you. They are a good starting point. If you need further customization, you can
 always override them with manual configuration.
 
-We will enable two presets in our first step:
+We will enable three presets in our first step:
 
 * **`clusterMetrics`**: adds the `k8sclusterreceiver` to the metrics pipeline. It collects
   cluster-level metrics directly from the Kubernetes API server (similar to what Kube State Metrics
@@ -98,7 +101,20 @@ for further processing. It will help us to understand **resource usage**.
 > instances would produce duplicate data. In general, a `DaemonSet` is recommended. In this example,
 > we will use deployment for simplicity.
 
+## Our Collector config
+
+Our first configuration will be minimal. You can check it in the [step-1.yaml](../helm/values/step-1.yaml)
+file, but it's enough to say that we will use those presets and the `contrib` image.
+
+> **Why the contrib image?**
+> The standard `otel/opentelemetry-collector` ships only the core built-in components. We will use the
+> [`otel/opentelemetry-collector-contrib`](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+> image, which bundles all community-contributed components. This is required for Kubernetes-specific
+> receivers and processors like `k8sclusterreceiver`, `kubeletMetrics` and `k8sattributesprocessor`, as well
+> as exporters for backends like VictoriaMetrics.
+
 ## Installing the collector
+
 First, we will create a namespace:
 ```sh
 kubectl create ns cnd-ws

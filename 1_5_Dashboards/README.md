@@ -1,4 +1,4 @@
-## Building dashboards in Grafana
+# Building dashboards in Grafana
 
 Querying every time we want to know something is nice, and very important because every
 investigation usually requires different data. But sometimes we need to:
@@ -58,18 +58,18 @@ kubectl port-forward -n cnd-ws deployments/ws-grafana 3000:3000
 
 > NOTE: we can log in with `admin`:`admin`
 
-### Adding datasources
+## Adding datasources
 
 The next step is to add `Data Sources`. This is just telling Grafana where our backends are,
 and which language they use.
 
-#### VictoriaMetrics Data Source
+### VictoriaMetrics Data Source
 Since VictoriaMetrics can be used as a drop-in replacement for
 Prometheus, we will add it as a **Prometheus datasource**. For that, we will follow the steps in
 https://console.victoriametrics.cloud/integrations/grafana and **select our metrics deployment and
 our dedicated Access Token**.
 
-#### VictoriaLogs Data Source
+### VictoriaLogs Data Source
 For that, we will follow the steps in
 https://console.victoriametrics.cloud/integrations/grafana . For VictoriaLogs, we will just **select
 our logs deployment and pick our token**.
@@ -77,7 +77,7 @@ our logs deployment and pick our token**.
 Since we use headers for tenant identification, set the tenant in the dedicated field:
 `Multitenancy` with your `AccountID` and `ProjectID`
 
-### Observing our application in a dashboard
+## Observing our application in a dashboard
 
 To load the dashboard we added as `ConfigMap`:
 1. Navigate to `Dashboards` -> `Hermes dashboard CND`
@@ -85,7 +85,7 @@ To load the dashboard we added as `ConfigMap`:
 
 > IMPORTANT: Refresh the page if variables don't load!
 
-### Inspecting our Metric panels
+## Inspecting our Metric panels
 
 Hover your mouse over any panel. If you press `e` or click on the three dots, you can inspect and
 edit a panel.
@@ -112,7 +112,7 @@ sum(hermes_responses_rcv_ok{id=~"$request_id"}) / sum(hermes_requests_sent{id=~"
 
 > EXERCISE: Try to reproduce one panel by clicking on `Edit` at the top and later, `Add visualization`.
 
-### Inspecting our Logs panels
+## Inspecting our Logs panels
 
 HITs panel (Printing graphs from logs):
 ```sh

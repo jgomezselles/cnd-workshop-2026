@@ -8,11 +8,12 @@ In the next part of this workshop we are going to:
 * Read logs from our application stdout
 * Group logs by containers
 * Define our tenant directly in the collector, instead of by Access Tokens
-* Observe our logs in VLUI
+- Observe our logs in VLUI
 
-> Now we will explain the configuration to apply. We will do it later together!
+> Now we will explain the configuration to apply.
+> We will do it later together!
 
-## Collecting k8s logs and reading logs from our application stdout
+## Collecting k8s logs and reading logs from our application stdout
 
 First, we are going to enable the following presets:
 ```yaml
@@ -24,7 +25,7 @@ First, we are going to enable the following presets:
 ```
 
 * **[`k8sobjectreceiver`](https://opentelemetry.io/docs/platforms/kubernetes/collector/components/#kubernetes-objects-receiver)**:
-The Kubernetes Objects receiver collects, either by pulling or watching, objects from the
+The Kubernetes Object receiver collects, either by pulling or watching, objects from the
 Kubernetes API server. The most common use case for this receiver is **watching Kubernetes
 events**, but it can be used to collect any type of Kubernetes object.
 * **[`filelogreceiver`](https://opentelemetry.io/docs/platforms/kubernetes/collector/components/#filelog-receiver)**:

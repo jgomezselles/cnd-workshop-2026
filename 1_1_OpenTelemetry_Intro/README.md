@@ -97,7 +97,7 @@ for further processing. It will help us to understand **resource usage**.
   namespace names, and node identifiers. It requires RBAC permissions (the chart handles this
   automatically) and is highly recommended for any Kubernetes deployment.
 
-> If using `mode: deployment`, it's recommended and a single replica, since multiple
+> If using `mode: deployment`, it's recommended to only run a single replica, since multiple
 > instances would produce duplicate data. In general, a `DaemonSet` is recommended. In this example,
 > we will use deployment for simplicity.
 

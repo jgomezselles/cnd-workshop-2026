@@ -22,22 +22,25 @@ signals
 
 By the end, you’ll have the knowledge to build a production-grade observability stack from scratch - fast, reliable, and scalable.
 
-# Links
-* Workshop link: https://cloudnativedays.ro/workshops/a130c5e1-fe82-4b06-93c9-c5f65a3e6d9d
-* Repo link: https://github.com/jgomezselles/cnd-workshop-2026
-
-# TODOs
-- [ ] Presentation
-
-# Requirements
-
-## Tooling
+## Requirements
 * Docker (tested on versions:  Client - 28.2.2 , Server 29.4.0)
 * Docker compose (tested on version v2.13.0)
 * POSIX shell for helper scripts: Linux/macOS Terminal or WSL 2 on Windows
 * Small k8s distro: minikube, kind or similar
 * kubectl: (tested on version: v1.33.1)
 * Helm: (tested on version: v3.18.1)
+
+## Links
+* Workshop link: https://cloudnativedays.ro/workshops/a130c5e1-fe82-4b06-93c9-c5f65a3e6d9d
+* Repo link: https://github.com/jgomezselles/cnd-workshop-2026
+* OpenTelemetry: https://opentelemetry.io/
+* OpenTelemetry Collector contrib (the distribution we use): https://github.com/open-telemetry/opentelemetry-collector-contrib
+* VictoriaMetrics (metrics storage and query engine): https://victoriametrics.com/
+* VictoriaMetrics Cloud (managed backend used in this workshop): https://victoriametrics.cloud/
+* VictoriaLogs (log storage and query engine): https://docs.victoriametrics.com/victorialogs/
+* vmanomaly:
+* Grafana (dashboarding and visualization): https://grafana.com/
+* Demo app: https://github.com/jgomezselles/hermes
 
 # Part I
 

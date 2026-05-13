@@ -39,6 +39,7 @@ __pycache__/
 .coverage.*
 htmlcov/
 *.log
+.DS_Store
 
 # Claude Code
 AGENTS.md

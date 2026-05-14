@@ -229,7 +229,10 @@ anomaly-detection/.secret/write_tenant_id
 > pre-created synthetic raw-data tenant. Each participant should set
 > `write_tenant_id` to their assigned participant tenant, for example `1:0`,
 > `2:0`, and so on. For initial end-to-end verification, organizers may ask
-> everyone to use the same read and write tenant temporarily.
+> everyone to use the same read and write tenant temporarily. In split mode,
+> vmanomaly reads raw input from the read tenant and writes anomaly outputs to
+> the write tenant; vmalert and Grafana read anomaly outputs from the write
+> tenant.
 
 Optional Cloud overrides:
 

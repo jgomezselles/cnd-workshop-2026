@@ -37,17 +37,19 @@ schedulers:
     n_jobs: 1
 
 models:
-  # Fast online baseline for abrupt spikes and step changes.
-  mad_latency_and_errors:
+  # Fast online baseline for abrupt payment error spikes.
+  mad_errors:
     class: "mad_online"
     decay: 0.93
     threshold: 4
     clip_predictions: true
     provide_series: ["y", "anomaly_score", "yhat", "yhat_lower", "yhat_upper"]
     schedulers: [online, backfill_online]
-    queries: [checkout_latency_p95, payment_error_ratio]
+    queries: [payment_error_ratio]
 
   # Seasonal quantiles make latency bands easier to explain in a live demo.
+  # Keep latency on a single model by default, so dashboard output is not
+  # duplicated by model_alias during participant exercises.
   seasonal_latency_band:
     class: "quantile_online"
     quantiles: [0.25, 0.5, 0.75]

@@ -20,6 +20,9 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ../shared/vmagent-relabel.yml:/etc/vmagent/relabel.yml:ro
       - ../.secret/BEARER_TOKEN_WRITE:/run/secrets/vm_cloud_write_bearer_token:ro
+    environment:
+      VM_CLOUD_WRITE_ACCOUNT_ID: ${VM_CLOUD_WRITE_ACCOUNT_ID:-0}
+      VM_CLOUD_WRITE_PROJECT_ID: ${VM_CLOUD_WRITE_PROJECT_ID:-0}
     command:
       - "--promscrape.config=/etc/prometheus/prometheus.yml"
       - "--remoteWrite.tmpDataPath=/vmagentdata"
@@ -29,10 +32,6 @@ services:
       # Accept /insert/<tenant>/... writes from vmanomaly and convert tenant
       # IDs to vm_account_id/vm_project_id before forwarding.
       - "--enableMultitenantHandlers"
-      # Scraped self-monitoring metrics do not pass through /insert/<tenant>,
-      # so attach the configured write tenant before remote write.
-      - "--remoteWrite.label=vm_account_id=${VM_CLOUD_WRITE_ACCOUNT_ID:-0}"
-      - "--remoteWrite.label=vm_project_id=${VM_CLOUD_WRITE_PROJECT_ID:-0}"
       # Smooth out large backtesting bursts before they hit VictoriaMetrics Cloud.
       - "--remoteWrite.rateLimit=${VMAGENT_RATE_LIMIT:-1048576}"
       - "--remoteWrite.maxDiskUsagePerURL=${VMAGENT_MAX_DISK_PER_URL:-2GB}"
@@ -53,7 +52,7 @@ services:
       # Reuse dataloader_config.yml for identical synthetic data while
       # overriding only the VictoriaMetrics destination.
       DATALOADER_DATASOURCE_URL: http://vmagent:8429/
-      DATALOADER_TENANT_ID: ${VM_CLOUD_DATALOADER_TENANT_ID:-0:101}
+      DATALOADER_TENANT_ID: ${VM_CLOUD_DATALOADER_TENANT_ID:-${VM_CLOUD_READ_TENANT_ID:-0:101}}
     volumes:
       - ../shared/dataloader_config.yml:/demo/dataloader_config.yml:ro
       - ../shared/mock_data_loader.py:/demo/mock_data_loader.py:ro
@@ -84,6 +83,8 @@ services:
       VM_CLOUD_WRITE_TENANT_ID: ${VM_CLOUD_WRITE_TENANT_ID:-0:101}
       VM_CLOUD_WRITE_TENANT_ID_ESCAPED: ${VM_CLOUD_WRITE_TENANT_ID_ESCAPED:-0%3A101}
       VM_CLOUD_GRAFANA_DATASOURCE_URL: ${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}
+      VM_CLOUD_READ_GRAFANA_DATASOURCE_URL: ${VM_CLOUD_READ_GRAFANA_DATASOURCE_URL:-}
+      VM_CLOUD_READ_TENANT_ID_ESCAPED: ${VM_CLOUD_READ_TENANT_ID_ESCAPED:-0%3A101}
       VMANOMALY_MODEL_DUMPS_DIR: /mnt/models/vmanomaly
       VMANOMALY_DATA_DUMPS_DIR: /mnt/data/vmanomaly
       VMANOMALY_MEMBERS_COUNT: "1"
@@ -94,7 +95,7 @@ services:
       VMANOMALY_BACKFILL_TO: ${VMANOMALY_BACKFILL_TO:-1970-01-01T00:00:00Z}
       # Lock the UI datasource selector to the same Cloud endpoint used by the
       # reader. Auth/TLS are proxied from reader settings by server config.
-      VMANOMALY_UI_DATASOURCE_URL: ${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}
+      VMANOMALY_UI_DATASOURCE_URL: ${VM_CLOUD_READ_GRAFANA_DATASOURCE_URL:-}
       VMANOMALY_UI_DATASOURCE_TYPE: vm
     volumes:
       - ./vmanomaly_config.yml:/config/vmanomaly_config.yml:ro

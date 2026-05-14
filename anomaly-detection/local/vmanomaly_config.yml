@@ -137,6 +137,7 @@ server:
   # already does what monitoring.pull does, exposing a /metrics endpoint with self-monitoring data
   addr: "0.0.0.0"
   port: 8490
+  ui_default_state: "#/?datasourceUrl=http://victoriametrics:8428&autocomplete=true&g0.step_input=15m"
   # if set to true, UI will use connection settings from reader configuration below when connecting to data sources, 
   #allowing it to connect with the same credentials, TLS settings, etc. without requiring having vmauth in front of both UI and data sources.
   use_reader_connection_settings: true

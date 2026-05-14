@@ -148,7 +148,7 @@ server:
   # Make /vmui/ open directly against the shared raw-data tenant. The type is
   # locked via VMANOMALY_UI_DATASOURCE_TYPE because the UI hash currently reads
   # datasourceUrl and tenant, while datasource type comes from server defaults.
-  ui_default_state: "#/?datasourceUrl=%{VM_CLOUD_READ_GRAFANA_DATASOURCE_URL}&g0.tenantID=%{VM_CLOUD_READ_TENANT_ID_ESCAPED}&autocomplete=true&step=10m"
+  ui_default_state: "#/?datasourceUrl=%{VM_CLOUD_READ_GRAFANA_DATASOURCE_URL}&g0.tenantID=%{VM_CLOUD_READ_TENANT_ID_ESCAPED}&autocomplete=true&g0.step_input=15m"
   # if set to true, UI will use connection settings from reader configuration below when connecting to data sources,
   # allowing it to connect with the same credentials, TLS settings, etc. without requiring having vmauth in front of both UI and data sources.
   use_reader_connection_settings: true

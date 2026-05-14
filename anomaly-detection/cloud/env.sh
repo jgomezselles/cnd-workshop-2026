@@ -30,7 +30,6 @@ read_optional_secret_file() {
   fi
 }
 
-export VM_CLOUD_BEARER_TOKEN
 export VM_CLOUD_READ_BEARER_TOKEN
 export VM_CLOUD_WRITE_BEARER_TOKEN
 export VM_CLOUD_DATASOURCE_URL
@@ -39,26 +38,20 @@ export VM_CLOUD_READ_GRAFANA_DATASOURCE_URL
 export VM_CLOUD_REMOTE_WRITE_URL
 export VM_CLOUD_READ_TENANT_ID
 export VM_CLOUD_WRITE_TENANT_ID
+export VM_CLOUD_READ_TENANT_ID_ESCAPED
 export VM_CLOUD_WRITE_TENANT_ID_ESCAPED
 export VM_CLOUD_WRITE_ACCOUNT_ID
 export VM_CLOUD_WRITE_PROJECT_ID
 export VM_CLOUD_DATALOADER_TENANT_ID
 
-READ_TOKEN_FILE="${SCRIPT_DIR}/../.secret/BEARER_TOKEN_READ"
-if [[ ! -s "${READ_TOKEN_FILE}" && -s "${SCRIPT_DIR}/../.secret/BEARER_TOKEN" ]]; then
-  # Backward-compatible fallback for older local secret folders.
-  READ_TOKEN_FILE="${SCRIPT_DIR}/../.secret/BEARER_TOKEN"
-fi
-
-VM_CLOUD_READ_BEARER_TOKEN="$(read_secret_file "${READ_TOKEN_FILE}")"
+VM_CLOUD_READ_BEARER_TOKEN="$(read_secret_file "${SCRIPT_DIR}/../.secret/BEARER_TOKEN_READ")"
 VM_CLOUD_WRITE_BEARER_TOKEN="$(read_secret_file "${SCRIPT_DIR}/../.secret/BEARER_TOKEN_WRITE")"
-# Compatibility alias for older compose snippets and ad-hoc shell usage.
-VM_CLOUD_BEARER_TOKEN="${VM_CLOUD_READ_BEARER_TOKEN}"
 
 VM_CLOUD_DATASOURCE_URL="$(read_secret_file "${SCRIPT_DIR}/../.secret/datasource_url")"
 VM_CLOUD_READ_TENANT_ID="$(read_optional_secret_file "${SCRIPT_DIR}/../.secret/read_tenant_id" "0:101")"
 VM_CLOUD_WRITE_TENANT_ID="$(read_optional_secret_file "${SCRIPT_DIR}/../.secret/write_tenant_id" "0:101")"
 VM_CLOUD_DATALOADER_TENANT_ID="$(read_optional_secret_file "${SCRIPT_DIR}/../.secret/dataloader_tenant_id" "${VM_CLOUD_READ_TENANT_ID}")"
+VM_CLOUD_READ_TENANT_ID_ESCAPED="${VM_CLOUD_READ_TENANT_ID//:/%3A}"
 VM_CLOUD_WRITE_TENANT_ID_ESCAPED="${VM_CLOUD_WRITE_TENANT_ID//:/%3A}"
 VM_CLOUD_WRITE_ACCOUNT_ID="${VM_CLOUD_WRITE_TENANT_ID%%:*}"
 if [[ "${VM_CLOUD_WRITE_TENANT_ID}" == *:* ]]; then

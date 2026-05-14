@@ -38,7 +38,20 @@ For initial verification, set both `read_tenant_id` and `write_tenant_id` to
 the same tenant, for example `0:101`. After this works end to end,
 `read_tenant_id` can remain the shared tenant with pre-created raw synthetic APM
 data, while `write_tenant_id` can move to a participant tenant where vmanomaly
-writes anomaly scores and where Grafana reads dashboards.
+writes anomaly scores and where vmalert and Grafana read participant-specific
+outputs. For example, `read_tenant_id=100:0` and `write_tenant_id=53:0` means:
+
+- vmanomaly reads raw APM input from `100:0`
+- vmanomaly writes model outputs to `53:0`
+- vmalert reads anomaly scores from `53:0` and writes alert state to `53:0`
+- Grafana anomaly-score and self-monitoring dashboards read from `53:0`
+- Grafana also provisions a shared raw-data datasource for `100:0`
+- the optional dataloader writes to `dataloader_tenant_id`, defaulting to the
+  read tenant
+
+The token used for participant write outputs must also be allowed to query that
+participant tenant, because vmalert and Grafana read anomaly scores and
+self-monitoring metrics from the same output tenant.
 
 `datasource_url` may be either the VictoriaMetrics Cloud base URL or a full
 `/select/<tenant>/prometheus` URL. `env.sh` normalizes the base URL, derives

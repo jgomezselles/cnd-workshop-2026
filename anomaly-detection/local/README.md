@@ -13,8 +13,10 @@ flowchart LR
   agent -->|"buffer + relabel writes"| vm["VictoriaMetrics<br/>single-node"]
   vm -->|"read raw series"| anomaly
   vm -->|"query dashboards"| grafana["Grafana"]
-  vm -->|"run alert rules"| vmalert["vmalert"]
+  vm -->|"query anomaly scores"| vmalert["vmalert"]
+  vmalert -->|"write alert state"| vm
   vmalert -->|"notify alerts"| alertmanager["Alertmanager"]
+  vmalert -.->|"explore incident"| grafana
   alertmanager -->|"send webhook"| webhook["webhook inbox<br/>page + logs"]
 ```
 
@@ -63,10 +65,14 @@ Open:
 
 - Grafana: http://localhost:3000
 - VictoriaMetrics: http://localhost:8428
+- vmagent: http://localhost:8429
 - vmanomaly UI: http://localhost:8490
 - vmalert: http://localhost:8880
 - Alertmanager: http://localhost:9093
 - Alert webhook inbox: http://localhost:5001
+
+When an alert is pending or firing in vmalert, its **Source link** opens the
+Grafana anomaly-score dashboard filtered to the alert's `for` query alias.
 
 Useful logs:
 

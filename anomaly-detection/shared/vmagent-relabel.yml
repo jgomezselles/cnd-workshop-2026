@@ -22,3 +22,9 @@
 - if: '{scheduler_alias="backfill_offline"}'
   target_label: scheduler_alias
   replacement: "offline"
+
+# Cloud shared raw-data reads may expose vm_account_id/vm_project_id labels.
+# Cloud writes are routed by the restricted write token, so these routing
+# labels must not be persisted as regular time-series labels.
+- action: labeldrop
+  regex: "vm_account_id|vm_project_id"

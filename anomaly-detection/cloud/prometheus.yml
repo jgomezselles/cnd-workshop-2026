@@ -1,11 +1,5 @@
 global:
   scrape_interval: 10s
-  # vmagent expands %{...} from container environment variables.
-  # These labels route scraped self-monitoring metrics to the participant
-  # write tenant when vmagent forwards to the Cloud multitenant endpoint.
-  external_labels:
-    vm_account_id: "%{VM_CLOUD_WRITE_ACCOUNT_ID}"
-    vm_project_id: "%{VM_CLOUD_WRITE_PROJECT_ID}"
 
 scrape_configs:
   # Local self-monitoring metrics for the cloud-backed demo services.

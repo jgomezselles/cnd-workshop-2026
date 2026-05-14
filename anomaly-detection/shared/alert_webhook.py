@@ -84,6 +84,7 @@ def _summarize(payload: dict[str, object]) -> dict[str, object]:
                 "status": alert.get("status"),
                 "labels": alert.get("labels"),
                 "annotations": alert.get("annotations"),
+                "generatorURL": alert.get("generatorURL"),
             }
             for alert in alerts
             if isinstance(alert, dict)
@@ -104,12 +105,14 @@ def _render_html() -> str:
         alerts = item.get("alerts")
         alert_count = len(alerts) if isinstance(alerts, list) else 0
         summary = _notification_title(item, group_labels, alert_count)
+        links = _alert_links(alerts)
         open_attr = " open" if idx == 0 else ""
         rows.append(
             f"<details{open_attr}>"
             f"<summary>{escape(summary)}</summary>"
             "<div class='details-body'>"
             f"<p><strong>Receiver:</strong> {escape(str(item.get('receiver', '')))}</p>"
+            f"{links}"
             f"<p><strong>Group:</strong> <code>{escape(json.dumps(group_labels, sort_keys=True))}</code></p>"
             f"<p><strong>Common:</strong> <code>{escape(json.dumps(common_labels, sort_keys=True))}</code></p>"
             f"<pre>{escape(json.dumps(alerts, indent=2, sort_keys=True))}</pre>"
@@ -210,6 +213,26 @@ def _notification_title(
         f"{status} | {severity} | {alertname} | {service_name} / {target} "
         f"| {alert_count} alert(s) | {received_at}"
     )
+
+
+def _alert_links(alerts: object) -> str:
+    if not isinstance(alerts, list):
+        return ""
+
+    links = []
+    for idx, alert in enumerate(alerts, start=1):
+        if not isinstance(alert, dict):
+            continue
+        url = alert.get("generatorURL")
+        if isinstance(url, str) and url.startswith(("http://", "https://")):
+            links.append(
+                f"<a href='{escape(url, quote=True)}' target='_blank' rel='noopener'>"
+                f"Source {idx}</a>"
+            )
+
+    if not links:
+        return ""
+    return f"<p><strong>Links:</strong> {' '.join(links)}</p>"
 
 
 if __name__ == "__main__":

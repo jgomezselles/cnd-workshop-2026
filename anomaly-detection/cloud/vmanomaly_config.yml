@@ -95,10 +95,10 @@ models:
     queries: [checkout_request_rate]
 
 reader:
-  # Cloud/cluster reader. The base URL is loaded from
-  # anomaly-detection/.secret/datasource_url by cloud/env.sh.
-  datasource_url: "%{VM_CLOUD_DATASOURCE_URL}"
-  tenant_id: "%{VM_CLOUD_READ_TENANT_ID}"
+  # Cloud reader. cloud/env.sh expands this to the full
+  # /select/<tenant>/prometheus endpoint, so writer.tenant_id can stay unset
+  # while vmagent routes writes via the restricted write token.
+  datasource_url: "%{VM_CLOUD_READ_GRAFANA_DATASOURCE_URL}"
   bearer_token_file: "/run/secrets/vm_cloud_read_bearer_token"
   sampling_period: "60s"
   max_points_per_query: 13000
@@ -110,7 +110,7 @@ reader:
           service_namespace="shop",
           service_name="checkout-api",
           http_route="/checkout"
-        }) without (service_version)
+        }) without (service_version, vm_account_id, vm_project_id)
       data_range: [0, "inf"]
 
     checkout_request_rate:
@@ -119,7 +119,7 @@ reader:
           service_namespace="shop",
           service_name="checkout-api",
           http_route="/checkout"
-        }[2m])) without (service_version)
+        }[2m])) without (service_version, vm_account_id, vm_project_id)
       data_range: [0, "inf"]
 
     payment_error_ratio:
@@ -128,14 +128,14 @@ reader:
           service_namespace="shop",
           service_name="checkout-api",
           peer_service="payment-service"
-        }) without (service_version)
+        }) without (service_version, vm_account_id, vm_project_id)
       data_range: [0, 1]
 
 writer:
-  # Write through local vmagent. vmagent accepts cluster-style tenant paths,
-  # buffers/rate-limits writes, and forwards them to VictoriaMetrics Cloud.
+  # Write through local vmagent. VictoriaMetrics Cloud tenant routing is
+  # controlled by the restricted write token used by vmagent, so writer.tenant_id
+  # is intentionally omitted here.
   datasource_url: "http://vmagent:8429/"
-  tenant_id: "%{VM_CLOUD_WRITE_TENANT_ID}"
   timeout: "30s"
   metric_format:
     __name__: "otel_apm_$VAR"

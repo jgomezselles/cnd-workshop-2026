@@ -137,6 +137,7 @@ services:
       - "--rule=/etc/alerts/*.yml"
       - "--httpListenAddr=:8880"
       - "--external.url=http://127.0.0.1:3000"
+      - '--external.alert.source=d/vmanomaly-dashboard-anomaly-stats/victoriametrics-vmanomaly-anomaly-statistics?orgId=1&from=now-12h&to=now&var-query_key={{ index .Labels "for" | queryEscape }}&var-groupby=instance&var-adhoc_filters=for%7C%3D%7C{{ index .Labels "for" | queryEscape }}'
     networks:
       - otel_apm_net
     restart: unless-stopped

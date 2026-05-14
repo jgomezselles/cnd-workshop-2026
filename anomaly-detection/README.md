@@ -258,8 +258,10 @@ flowchart LR
   agent -->|"buffer + relabel writes"| vm["VictoriaMetrics<br/>single-node"]
   vm -->|"read raw series"| anomaly
   vm -->|"query dashboards"| grafana["Grafana"]
-  vm -->|"run alert rules"| vmalert["vmalert"]
+  vm -->|"query anomaly scores"| vmalert["vmalert"]
+  vmalert -->|"write alert state"| vm
   vmalert -->|"notify alerts"| alertmanager["Alertmanager"]
+  vmalert -.->|"explore incident"| grafana
   alertmanager -->|"send webhook"| webhook["webhook inbox<br/>page + logs"]
 ```
 
@@ -273,8 +275,9 @@ flowchart LR
   agent -->|"rate-limit writes"| cloud["VictoriaMetrics Cloud"]
   cloud -->|"read raw series"| anomaly
   cloud -->|"query dashboards"| grafana["Grafana"]
-  cloud -->|"run alert rules"| vmalert
+  cloud -->|"query anomaly scores"| vmalert
   vmalert -->|"notify alerts"| alertmanager["Alertmanager"]
+  vmalert -.->|"explore incident"| grafana
   alertmanager -->|"send webhook"| webhook["webhook inbox<br/>page + logs"]
 ```
 
@@ -566,6 +569,8 @@ Inspect the alerting path after anomaly scores are visible:
 2. Open vmalert and check whether `APMAnomalyScoreHigh` is pending or firing.
 3. Open Alertmanager and confirm the alert is grouped and active.
 4. Open the webhook inbox and inspect the JSON notification.
+5. Use the alert `Source link` to jump to the Grafana anomaly-score dashboard
+   filtered to the alert's `for` query alias.
 
 Open:
 
@@ -597,6 +602,8 @@ models or schedulers produce anomaly scores for the same raw time series.
 Alertmanager then groups notifications by `alertname`, `severity`,
 `service_namespace`, `service_name`, `business_flow`, and `for`, while keeping
 individual `instance` labels inside the grouped notification for debugging.
+The alert source link opens Grafana with `query_key` and an ad hoc
+`for = <query alias>` filter already set.
 
 <details>
 <summary>Hint / answer</summary>

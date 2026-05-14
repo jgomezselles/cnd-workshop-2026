@@ -6,8 +6,9 @@ buffers, rate-limits, relabels, and forwards samples to Cloud.
 
 Cloud mode also starts Alertmanager and the local webhook inbox, so alert
 notifications can be inspected without Slack, email, or external credentials.
-> **Note:** Cloud host ports are offset from local mode, so both stacks can run side by
-side on one machine.
+
+> **Note:** Cloud host ports are offset from local mode, so both stacks can run
+> side by side on one machine.
 
 ```mermaid
 flowchart LR
@@ -16,8 +17,10 @@ flowchart LR
   agent -->|"rate-limit writes"| cloud["VictoriaMetrics Cloud<br/>remote write"]
   cloud -->|"read raw series"| anomaly
   cloud -->|"query dashboards"| grafana["Grafana"]
-  cloud -->|"run alert rules"| vmalert["vmalert"]
+  cloud -->|"query anomaly scores"| vmalert["vmalert"]
+  vmalert -->|"write alert state"| agent
   vmalert -->|"notify alerts"| alertmanager["Alertmanager"]
+  vmalert -.->|"explore incident"| grafana
   alertmanager["Alertmanager"] -->|"send webhook"| webhook["webhook inbox<br/>page + logs"]
 ```
 
@@ -34,28 +37,36 @@ anomaly-detection/.secret/read_tenant_id
 anomaly-detection/.secret/write_tenant_id
 ```
 
-For initial verification, set both `read_tenant_id` and `write_tenant_id` to
-the same tenant, for example `0:101`. After this works end to end,
-`read_tenant_id` can remain the shared tenant with pre-created raw synthetic APM
-data, while `write_tenant_id` can move to a participant tenant where vmanomaly
-writes anomaly scores and where vmalert and Grafana read participant-specific
-outputs. For example, `read_tenant_id=100:0` and `write_tenant_id=53:0` means:
+Set `read_tenant_id` to the shared tenant with pre-created raw synthetic APM
+data. Set `write_tenant_id` to the participant tenant where vmanomaly writes
+anomaly scores and where vmalert and Grafana read participant-specific outputs.
+For example, `read_tenant_id=1000:0` and `write_tenant_id=12:0` means:
 
-- vmanomaly reads raw APM input from `100:0`
-- vmanomaly writes model outputs to `53:0`
-- vmalert reads anomaly scores from `53:0` and writes alert state to `53:0`
-- Grafana anomaly-score and self-monitoring dashboards read from `53:0`
-- Grafana also provisions a shared raw-data datasource for `100:0`
-- the optional dataloader writes to `dataloader_tenant_id`, defaulting to the
-  read tenant
+- vmanomaly reads raw APM input from `1000:0`
+- vmagent uses the restricted write token to write model outputs to `12:0`
+- vmalert reads anomaly scores from `12:0` and writes alert state through
+  vmagent with the same restricted write token
+- Grafana anomaly-score and self-monitoring dashboards read from `12:0`
+- Grafana also provisions a shared raw-data datasource for `1000:0`
+- the optional dataloader writes through vmagent to the tenant encoded by the
+  active write token
 
-The token used for participant write outputs must also be allowed to query that
-participant tenant, because vmalert and Grafana read anomaly scores and
-self-monitoring metrics from the same output tenant.
+The read token must be allowed to query the participant output tenant, because
+vmalert and Grafana read anomaly scores and self-monitoring metrics from that
+tenant.
 
 `datasource_url` may be either the VictoriaMetrics Cloud base URL or a full
-`/select/<tenant>/prometheus` URL. `env.sh` normalizes the base URL, derives
-read/write query URLs, and builds the remote-write URL.
+`/select/<tenant>/prometheus` URL. `env.sh` normalizes the base URL and derives
+read/write query URLs. vmagent writes to the Cloud `/prometheus/api/v1/write`
+endpoint; the restricted write token determines the destination tenant. If you
+intentionally use a regular non-tenant-specific token, override
+`remote_write_url` with the full `/insert/<tenant>/prometheus/api/v1/write`
+path for that token.
+
+> **Note:** Participant cloud mode writes to the tenant encoded by the active
+> write token. If organizers need to seed a separate shared raw-data tenant with
+> the dataloader, run a dedicated seeding pass with credentials for that shared
+> tenant, or temporarily use the shared write token for that run.
 
 Optional:
 
@@ -84,10 +95,10 @@ Seed Cloud with the synthetic dataset first:
 
 For participant runs this is normally skipped because raw synthetic data is
 expected to already exist in the shared read tenant. If organizers use
-`--with-dataloader`, make sure the write token can write to the tenant selected
-by `dataloader_tenant_id` or `read_tenant_id`.
+`--with-dataloader`, make sure the write token can write to the tenant being
+seeded.
 
-Keep local Grafana/vmanomaly/vmagent volumes:
+Keep Cloud-stack Grafana/vmanomaly/vmagent Docker volumes:
 
 ```bash
 ./up.sh --skip-dataloader --keep-volumes
@@ -103,6 +114,9 @@ Open:
 - vmalert: http://localhost:18880
 - Alertmanager: http://localhost:19093
 - Alert webhook inbox: http://localhost:15001
+
+When an alert is pending or firing in vmalert, its **Source link** opens the
+Grafana anomaly-score dashboard filtered to the alert's `for` query alias.
 
 Useful logs:
 
@@ -129,7 +143,7 @@ health:
 
 ## Stop
 
-Stop and remove local Cloud-stack volumes:
+Stop and remove Cloud-stack Docker volumes:
 
 ```bash
 ./down.sh

@@ -39,10 +39,6 @@ export VM_CLOUD_REMOTE_WRITE_URL
 export VM_CLOUD_READ_TENANT_ID
 export VM_CLOUD_WRITE_TENANT_ID
 export VM_CLOUD_READ_TENANT_ID_ESCAPED
-export VM_CLOUD_WRITE_TENANT_ID_ESCAPED
-export VM_CLOUD_WRITE_ACCOUNT_ID
-export VM_CLOUD_WRITE_PROJECT_ID
-export VM_CLOUD_DATALOADER_TENANT_ID
 
 VM_CLOUD_READ_BEARER_TOKEN="$(read_secret_file "${SCRIPT_DIR}/../.secret/BEARER_TOKEN_READ")"
 VM_CLOUD_WRITE_BEARER_TOKEN="$(read_secret_file "${SCRIPT_DIR}/../.secret/BEARER_TOKEN_WRITE")"
@@ -50,15 +46,7 @@ VM_CLOUD_WRITE_BEARER_TOKEN="$(read_secret_file "${SCRIPT_DIR}/../.secret/BEARER
 VM_CLOUD_DATASOURCE_URL="$(read_secret_file "${SCRIPT_DIR}/../.secret/datasource_url")"
 VM_CLOUD_READ_TENANT_ID="$(read_optional_secret_file "${SCRIPT_DIR}/../.secret/read_tenant_id" "0:101")"
 VM_CLOUD_WRITE_TENANT_ID="$(read_optional_secret_file "${SCRIPT_DIR}/../.secret/write_tenant_id" "0:101")"
-VM_CLOUD_DATALOADER_TENANT_ID="$(read_optional_secret_file "${SCRIPT_DIR}/../.secret/dataloader_tenant_id" "${VM_CLOUD_READ_TENANT_ID}")"
 VM_CLOUD_READ_TENANT_ID_ESCAPED="${VM_CLOUD_READ_TENANT_ID//:/%3A}"
-VM_CLOUD_WRITE_TENANT_ID_ESCAPED="${VM_CLOUD_WRITE_TENANT_ID//:/%3A}"
-VM_CLOUD_WRITE_ACCOUNT_ID="${VM_CLOUD_WRITE_TENANT_ID%%:*}"
-if [[ "${VM_CLOUD_WRITE_TENANT_ID}" == *:* ]]; then
-  VM_CLOUD_WRITE_PROJECT_ID="${VM_CLOUD_WRITE_TENANT_ID#*:}"
-else
-  VM_CLOUD_WRITE_PROJECT_ID="0"
-fi
 
 VM_CLOUD_BASE_URL="${VM_CLOUD_DATASOURCE_URL%/}"
 
@@ -81,5 +69,5 @@ fi
 if [[ -s "${SCRIPT_DIR}/../.secret/remote_write_url" ]]; then
   VM_CLOUD_REMOTE_WRITE_URL="$(read_secret_file "${SCRIPT_DIR}/../.secret/remote_write_url")"
 else
-  VM_CLOUD_REMOTE_WRITE_URL="${VM_CLOUD_BASE_URL}/insert/multitenant/prometheus/api/v1/write"
+  VM_CLOUD_REMOTE_WRITE_URL="${VM_CLOUD_BASE_URL}/prometheus/api/v1/write"
 fi

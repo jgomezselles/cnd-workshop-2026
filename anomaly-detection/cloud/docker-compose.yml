@@ -5,7 +5,7 @@ name: vmanomaly-otel-apm-cloud
 # - by default vmanomaly reads and writes through the same Cloud tenant so the
 #   path can be verified end to end; later, read/write tenants can be split;
 # - vmanomaly and the optional dataloader write to local vmagent; vmagent buffers,
-#   rate-limits, and forwards to VictoriaMetrics Cloud;
+#   rate-limits, and forwards to the tenant encoded by the Cloud write token;
 # - the dataloader writes the same synthetic dataset as the local stack, but
 #   targets the cloud tenant before vmanomaly starts.
 
@@ -20,18 +20,12 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ../shared/vmagent-relabel.yml:/etc/vmagent/relabel.yml:ro
       - ../.secret/BEARER_TOKEN_WRITE:/run/secrets/vm_cloud_write_bearer_token:ro
-    environment:
-      VM_CLOUD_WRITE_ACCOUNT_ID: ${VM_CLOUD_WRITE_ACCOUNT_ID:-0}
-      VM_CLOUD_WRITE_PROJECT_ID: ${VM_CLOUD_WRITE_PROJECT_ID:-0}
     command:
       - "--promscrape.config=/etc/prometheus/prometheus.yml"
       - "--remoteWrite.tmpDataPath=/vmagentdata"
       - "--remoteWrite.url=${VM_CLOUD_REMOTE_WRITE_URL:-}"
       - "--remoteWrite.relabelConfig=/etc/vmagent/relabel.yml"
       - "--remoteWrite.bearerTokenFile=/run/secrets/vm_cloud_write_bearer_token"
-      # Accept /insert/<tenant>/... writes from vmanomaly and convert tenant
-      # IDs to vm_account_id/vm_project_id before forwarding.
-      - "--enableMultitenantHandlers"
       # Smooth out large backtesting bursts before they hit VictoriaMetrics Cloud.
       - "--remoteWrite.rateLimit=${VMAGENT_RATE_LIMIT:-1048576}"
       - "--remoteWrite.maxDiskUsagePerURL=${VMAGENT_MAX_DISK_PER_URL:-2GB}"
@@ -52,7 +46,6 @@ services:
       # Reuse dataloader_config.yml for identical synthetic data while
       # overriding only the VictoriaMetrics destination.
       DATALOADER_DATASOURCE_URL: http://vmagent:8429/
-      DATALOADER_TENANT_ID: ${VM_CLOUD_DATALOADER_TENANT_ID:-${VM_CLOUD_READ_TENANT_ID:-0:101}}
     volumes:
       - ../shared/dataloader_config.yml:/demo/dataloader_config.yml:ro
       - ../shared/mock_data_loader.py:/demo/mock_data_loader.py:ro
@@ -81,7 +74,6 @@ services:
       VM_CLOUD_DATASOURCE_URL: ${VM_CLOUD_DATASOURCE_URL:-}
       VM_CLOUD_READ_TENANT_ID: ${VM_CLOUD_READ_TENANT_ID:-0:101}
       VM_CLOUD_WRITE_TENANT_ID: ${VM_CLOUD_WRITE_TENANT_ID:-0:101}
-      VM_CLOUD_WRITE_TENANT_ID_ESCAPED: ${VM_CLOUD_WRITE_TENANT_ID_ESCAPED:-0%3A101}
       VM_CLOUD_GRAFANA_DATASOURCE_URL: ${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}
       VM_CLOUD_READ_GRAFANA_DATASOURCE_URL: ${VM_CLOUD_READ_GRAFANA_DATASOURCE_URL:-}
       VM_CLOUD_READ_TENANT_ID_ESCAPED: ${VM_CLOUD_READ_TENANT_ID_ESCAPED:-0%3A101}
@@ -131,11 +123,12 @@ services:
       - "--remoteRead.url=${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}"
       - "--remoteRead.bearerTokenFile=/run/secrets/vm_cloud_read_bearer_token"
       # Persist vmalert alert state through vmagent into the configured Cloud tenant.
-      - "--remoteWrite.url=http://vmagent:8429/insert/${VM_CLOUD_WRITE_TENANT_ID:-0:101}/prometheus"
+      - "--remoteWrite.url=http://vmagent:8429/"
       - "--notifier.url=http://alertmanager:9093/"
       - "--rule=/etc/alerts/*.yml"
       - "--httpListenAddr=:8880"
       - "--external.url=http://127.0.0.1:13000"
+      - '--external.alert.source=d/vmanomaly-dashboard-anomaly-stats/victoriametrics-vmanomaly-anomaly-statistics?orgId=1&from=now-12h&to=now&var-query_key={{ index .Labels "for" | queryEscape }}&var-groupby=instance&var-adhoc_filters=for%7C%3D%7C{{ index .Labels "for" | queryEscape }}'
     networks:
       - otel_apm_cloud_net
     restart: unless-stopped

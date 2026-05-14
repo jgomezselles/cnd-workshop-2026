@@ -1,10 +1,9 @@
-# cnd-workshop-2026
-Repo with guide and assets to follow the 2026 CND Romania workshop: Observability unlocked with
-OpenTelemetry and the VictoriaMetrics Stack
+# Observability unlocked with OpenTelemetry and the VictoriaMetrics Stack - CND Romania 2026
+Repo with guide and assets to follow the 2026 CND Romania workshop.
 
 # Abstract
 
-Observability doesn’t have to be hard. In this hands-on workshop, we’ll show how to go from zero to
+Observability doesn’t need to be hard. In this hands-on workshop, we’ll show how to go from zero to
 Kubernetes observability in minutes with Open Source projects like VictoriaMetrics, AlertManager,
 OpenTelemetry or Grafana.
 
@@ -38,7 +37,7 @@ By the end, you’ll have the knowledge to build a production-grade observabilit
 * VictoriaMetrics (metrics storage and query engine): https://victoriametrics.com/
 * VictoriaMetrics Cloud (managed backend used in this workshop): https://victoriametrics.cloud/
 * VictoriaLogs (log storage and query engine): https://docs.victoriametrics.com/victorialogs/
-* vmanomaly:
+* vmanomaly: https://docs.victoriametrics.com/anomaly-detection/
 * Grafana (dashboarding and visualization): https://grafana.com/
 * Demo app: https://github.com/jgomezselles/hermes
 
@@ -98,6 +97,14 @@ as data sources using the Cloud integration guide. We will then load a pre-built
 provisioned as a ConfigMap, with panels for response time graphs, success rate gauges, and
 per-stream log hit counts. We will finish by inspecting and editing panels to understand the
 MetricsQL and LogsQL queries behind each visualization, and try creating a new panel from scratch.
+
+## Uninstalling
+
+Once finished, before going into Part II, delete the demo deployment by running:
+```sh
+helm uninstall -n cnd-ws ws
+kubectl delete ns cnd-ws
+```
 
 ## Next steps
 

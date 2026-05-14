@@ -13,7 +13,7 @@ names describe business behavior, and generated time series keep a stable
 
 ## Table of contents
 
-- [Anomaly detection terms](#anomaly-detection-terms)
+- [From telemetry to decisions](#from-telemetry-to-decisions)
 - [Workshop roadmap](#workshop-roadmap)
 - [What we will run](#what-we-will-run)
 - [Component overview](#component-overview)
@@ -22,50 +22,35 @@ names describe business behavior, and generated time series keep a stable
 - [Secrets](#secrets)
 - [Architecture](#architecture)
 - [Run the demo](#run-the-demo)
-- [Explore the data first](#explore-the-data-first)
+- [Explore data and AD concepts](#explore-data-and-ad-concepts)
 - [Grafana exercises](#grafana-exercises)
 - [Alerts and notifications](#alerts-and-notifications)
-- [Domain knowledge](#domain-knowledge)
-- [Synthetic dataset](#synthetic-dataset)
+- [Appendix: Synthetic dataset](#synthetic-dataset)
 - [Stop](#stop)
 
-## Anomaly detection terms
+## From telemetry to decisions
 
-Before running the stack, align on the time-series terms used in the exercise:
+Part I of the workshop showed how to instrument services, collect telemetry,
+and send it to a time-series (VictoriaMetrics) or logs (VictoriaLogs) database, using OpenTelemetry and VictoriaMetrics cloud. 
+**That is the foundation, but the operating journey does not end at ingestion: teams still need to turn that data into decisions, dashboards, and alerts that are useful under production conditions.**
 
-- **Trend:** a persistent direction of change, such as traffic slowly dropping
-  over a few hours.
-- **Seasonality:** a repeating pattern, such as lower weekend checkout traffic
-  or daily peaks around working hours.
-- **Changepoint:** a step-like shift in the normal level, such as latency
-  becoming 1.6x higher and staying there.
-- **Contextual anomaly:** a point or short window that is unusual for its
-  context, such as a request-rate drop during a normal peak hour.
-- **Slow trend anomaly:** a gradual change that is not obvious from a single
-  point but becomes problematic over a window.
+This part adds anomaly detection on top of the same monitoring loop. We will
+start from synthetic APM data, learn what normal behavior looks like, inspect
+model outputs, and then use the resulting anomaly scores in Grafana and
+vmalert. The focus is practical: static alerting rules often fail when signals
+have trend, seasonality, unknown scale, or many returned time series where one
+global threshold does not fit every service or instance.
 
-Static alerts on raw metrics often fail short for seasonal and trending data:
-a fixed latency threshold can be too noisy during peaks and too insensitive
-during quiet periods. They also become awkward when one query returns many
-time series with unknown or incompatible scale, for example request rates for
-many services instead of a bounded CPU utilization percentage. A single static
-threshold rarely fits every service, route, region, or instance. ML-based
-anomaly detection can learn expected behavior per series and emit a unified
-`anomaly_score`, so alerting rules can be simpler and more stable, for example
-`anomaly_score > 1`. This is not a replacement for domain knowledge; it is a
-way to encode expected dynamics and reduce alert rule maintenance and alert
-fatigue. For an intuition, of how it works in a concise product framing, see the first two sections of
-the VictoriaMetrics Anomaly Detection docs:
-[What does it do?](https://docs.victoriametrics.com/anomaly-detection/#what-does-it-do)
-and
-[How does it work?](https://docs.victoriametrics.com/anomaly-detection/#how-does-it-work).
+> **Note:** For the hands-on flow we use the **local stack** first because it is easier to
+reset and does not depend on participant-specific cloud credentials. The local
+data, labels, models, dashboards, and alert rules intentionally mirror the
+cloud flow. Cloud mode adds multitenant routing and `.secret` files, but the
+observations and exercises are the same.
 
 [Back to ToC](#toc)
 
 ## Workshop roadmap
 
-0. **Terms primer:** understand trend, seasonality, changepoints, contextual
-   anomalies, and why static thresholds can be hard to maintain.
 1. **Installation basics:** install Docker, verify Docker Compose, clone the
    repo, and prepare the `.secret` files.
 2. **Setup overview:** review local/cloud components, how data moves, and which
@@ -75,16 +60,12 @@ and
    cloud usually reuses organizer-provided raw data and participant-specific
    write tenants.
 4. **Explore the OTEL APM demo stack:**
-   - **4.1** inspect historical raw queries in the vmanomaly UI
+   - **4.1** inspect historical raw queries and AD concepts in the vmanomaly UI
    - **4.2** explore anomaly scores in Grafana
    - **4.3** briefly check vmanomaly self-monitoring
    - **4.4** inspect vmalert rules and firing alerts
    - **4.5** open Alertmanager and the local webhook notification page
-   - **4.6** try free-form analysis for a specific query
-5. **Domain knowledge incorporation:** discuss what the business already knows
-   about each signal, such as valid value ranges, whether only spikes or drops
-   matter, and how much deviation is worth paging on.
-6. **Wrap up:** connect the demo back to the operating model: raw signals,
+5. **Wrap up:** connect the demo back to the operating model: raw signals,
    expected behavior, anomaly scores, alert grouping, and human judgment.
 
 [Back to ToC](#toc)
@@ -102,6 +83,12 @@ There are two deployment modes:
   write through local vmagent so writes can be buffered, relabeled, and
   rate-limited. Grafana, Alertmanager, and the webhook inbox still run locally
   on cloud-specific host ports.
+
+In the workshop cloud layout, raw synthetic data is expected in the shared read
+tenant `1000:0`. Participant outputs are written to individual tenants such as
+`10:1`, `10:2`, ... `10:N`. This keeps the expensive shared seed data common
+while each participant can write vmanomaly outputs, vmalert state, and
+self-monitoring metrics into their own tenant.
 
 ```mermaid
 flowchart LR
@@ -167,12 +154,29 @@ You need:
 - for Cloud mode only: VictoriaMetrics Cloud query URL, tenant IDs, and bearer
   tokens supplied by organizers
 
-Check versions:
+Verify Docker from a console before the workshop:
 
 ```sh
 docker version
 docker compose version
 ```
+
+Expected result:
+
+- `docker version` prints both `Client` and `Server` sections. If the `Server`
+  section is missing or says it cannot connect, Docker Desktop or Docker Engine
+  is not running.
+- `docker compose version` prints Docker Compose v2, for example
+  `Docker Compose version v2.x.x`. This workshop uses the v2 plugin command
+  `docker compose`, not the legacy standalone `docker-compose` command.
+
+Optional quick runtime check:
+
+```sh
+docker run --rm hello-world
+```
+
+This should pull and run the tiny Docker test image successfully.
 
 ### Installing Docker
 
@@ -225,14 +229,14 @@ anomaly-detection/.secret/write_tenant_id
 
 > **Note:** In cloud mode, organizers should provide the shared
 > `license`, `datasource_url`, read bearer token, write bearer token, and the
-> shared read tenant ID. The read tenant should usually point to the shared
-> pre-created synthetic raw-data tenant. Each participant should set
-> `write_tenant_id` to their assigned participant tenant, for example `1:0`,
-> `2:0`, and so on. For initial end-to-end verification, organizers may ask
-> everyone to use the same read and write tenant temporarily. In split mode,
-> vmanomaly reads raw input from the read tenant and writes anomaly outputs to
-> the write tenant; vmalert and Grafana read anomaly outputs from the write
-> tenant.
+> shared read tenant ID. For the planned workshop flow, the shared raw-data
+> tenant is `1000:0`, while each participant gets an assigned write tenant such
+> as `10:1`, `10:2`, ... `10:N`. For initial end-to-end verification,
+> organizers may ask everyone to use the same read and write tenant
+> temporarily. In split mode, vmanomaly reads raw input from the read tenant and
+> writes anomaly outputs to the write tenant; vmalert and Grafana query anomaly
+> outputs and self-monitoring metrics from the participant write tenant using a
+> read-capable token.
 
 Optional Cloud overrides:
 
@@ -240,8 +244,6 @@ Optional Cloud overrides:
 anomaly-detection/.secret/grafana_datasource_url
 anomaly-detection/.secret/remote_write_url
 ```
-
-These files are ignored by git.
 
 [Back to ToC](#toc)
 
@@ -356,12 +358,55 @@ See [local/README.md](./local/README.md) and
 
 [Back to ToC](#toc)
 
-## Explore the data first
+## Explore data and AD concepts
 
-Start with raw historical data before looking at anomaly scores. Open the
-vmanomaly UI, use the clock icon to open query history, and choose the
-**Server Queries** tab. The UI is documented in the official
+Start in the vmanomaly UI before looking at Grafana. This is where raw
+MetricsQL queries, anomaly-detection terms, and model outputs connect to each
+other. The UI is documented in the official
 [vmanomaly UI guide](https://docs.victoriametrics.com/anomaly-detection/ui/).
+
+The walkthrough order is:
+
+1. Run a few raw `apm_` queries to understand the synthetic service signals.
+2. Run the premade server queries exposed by vmanomaly from the `reader`
+   section ("Query history" tab) to see the exact queries used for modeling and
+   alerting.
+3. Name the concepts visible in the data: seasonality, trend, changepoint,
+   contextual anomaly, and slow trend.
+4. Tune and run a simple anomaly-detection model in the UI, for example a
+   Median-absolute-deviation (MAD)-style robust baseline, then apply basic domain knowledge such as detection direction or a minimum meaningful deviation.
+
+<details>
+<summary>AD terms used in this walkthrough</summary>
+
+- **Trend:** a persistent direction of change, such as traffic slowly dropping
+  over a few hours.
+- **Seasonality:** a repeating pattern, such as lower weekend checkout traffic
+  or daily peaks around working hours.
+- **Changepoint:** a step-like shift in the normal level, such as latency
+  becoming 1.6x higher and staying there.
+- **Contextual anomaly:** a point or short window that is unusual for its
+  context, such as a request-rate drop during a normal peak hour.
+- **Slow trend anomaly:** a gradual change that is not obvious from a single
+  point but becomes problematic over a window.
+
+Static alerts on raw metrics often fail short for seasonal and trending data:
+a fixed latency threshold can be too noisy during peaks and too insensitive
+during quiet periods. They also become awkward when one query returns many
+time series with unknown or incompatible scale, for example request rates for
+many services instead of a bounded CPU utilization percentage. A single static
+threshold rarely fits every service, route, region, or instance. ML-based
+anomaly detection can learn expected behavior per series and emit a unified
+`anomaly_score`, so alerting rules can be simpler and more stable, for example
+`anomaly_score > 1`. This is not a replacement for domain knowledge; it is a
+way to encode expected dynamics and reduce alert rule maintenance and alert
+fatigue. For concise product framing, see the first two sections of the
+VictoriaMetrics Anomaly Detection docs:
+[What does it do?](https://docs.victoriametrics.com/anomaly-detection/#what-does-it-do)
+and
+[How does it work?](https://docs.victoriametrics.com/anomaly-detection/#how-does-it-work).
+
+</details>
 
 In the query history modal, use the **Server Queries** tab to replay configured
 queries such as:
@@ -392,6 +437,35 @@ sum(rate(apm_http_server_request_count_total{
 
 Use a historical range first, then include the near-future window to see how
 already-written samples can imitate a live demo.
+
+While looking at the raw signals, connect them back to the terms from the
+primer: smooth daily/weekly seasonality, persistent changepoints, contextual
+spikes or drops, and slow trends. Then run or discuss a simple robust baseline,
+such as MAD, to see how an anomaly model turns raw input into reusable output
+series.
+
+The important output labels and metrics are:
+
+- `for`: the configured query alias, such as `checkout_latency_p95`,
+  `checkout_request_rate`, or `payment_error_ratio`.
+- `y`: the value vmanomaly used as model input for a given timestamp.
+- `yhat`: the model's expected value.
+- `yhat_lower` and `yhat_upper`: the expected band around `yhat`, when the
+  model provides one.
+- `anomaly_score`: the normalized score (0 to 1 - likely normal, > 1 - likely anomalous) consumed by Grafana panels and vmalert
+  rules.
+
+After this, the Grafana anomaly dashboard is easier to read because each line
+has a clear role: raw signal, expected behavior, uncertainty band, or alerting
+score.
+
+Domain tuning should stay practical: error ratio is bounded between `0` and
+`1`, request rate cannot be negative, latency and error-rate spikes are usually
+bad, and traffic drops often matter only during expected active periods. The
+goal is to translate business assumptions into model behavior, not to memorize
+configuration keys. See the VictoriaMetrics FAQ section on
+[incorporating domain knowledge](https://docs.victoriametrics.com/anomaly-detection/faq/#incorporating-domain-knowledge)
+for the same idea in product documentation.
 
 [Back to ToC](#toc)
 
@@ -537,35 +611,6 @@ do not create duplicate alert identities for the same business entity. Use
 specific checkout instance to inspect first.
 
 </details>
-
-[Back to ToC](#toc)
-
-## Domain knowledge
-
-After the guided exercises, choose one query and discuss which business
-assumptions should shape anomaly detection. The goal is not to memorize
-configuration keys; it is to translate operational knowledge into detection
-behavior. See the VictoriaMetrics FAQ section on
-[incorporating domain knowledge](https://docs.victoriametrics.com/anomaly-detection/faq/#incorporating-domain-knowledge)
-for the same idea in product documentation.
-
-Workshop-level questions:
-
-- What value range is physically or logically valid? Error ratio is bounded
-  between 0 and 1, while request rate is non-negative but not capped.
-- Which direction matters? Latency and error-rate spikes are usually bad, while
-  traffic drops may matter only during expected active periods.
-- What size of deviation is worth action? A tiny error-rate wobble may be noise;
-  a persistent increase can be a real release or dependency problem.
-- Which context matters? A traffic drop at peak hour is more suspicious than
-  the same drop during the night or weekend.
-- Which labels define the business entity? Alerting should usually collapse
-  model/scheduler implementation details and keep service, route, flow, query,
-  and instance labels for investigation.
-
-This is where AD tooling should help reduce false positives and false
-negatives: keep the model sensitive to business-impacting behavior, but avoid
-turning normal operational variation into pages.
 
 [Back to ToC](#toc)
 

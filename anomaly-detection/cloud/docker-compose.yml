@@ -123,12 +123,13 @@ services:
       - "18880:8880"
     volumes:
       - ../shared/vmalert_config.yml:/etc/alerts/alerts.yml:ro
+      - ../.secret/BEARER_TOKEN_READ:/run/secrets/vm_cloud_read_bearer_token:ro
       - ../.secret/BEARER_TOKEN_WRITE:/run/secrets/vm_cloud_write_bearer_token:ro
     command:
       - "--datasource.url=${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}"
-      - "--datasource.bearerTokenFile=/run/secrets/vm_cloud_write_bearer_token"
+      - "--datasource.bearerTokenFile=/run/secrets/vm_cloud_read_bearer_token"
       - "--remoteRead.url=${VM_CLOUD_GRAFANA_DATASOURCE_URL:-}"
-      - "--remoteRead.bearerTokenFile=/run/secrets/vm_cloud_write_bearer_token"
+      - "--remoteRead.bearerTokenFile=/run/secrets/vm_cloud_read_bearer_token"
       # Persist vmalert alert state through vmagent into the configured Cloud tenant.
       - "--remoteWrite.url=http://vmagent:8429/insert/${VM_CLOUD_WRITE_TENANT_ID:-0:101}/prometheus"
       - "--notifier.url=http://alertmanager:9093/"

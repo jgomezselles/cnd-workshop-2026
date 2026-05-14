@@ -3,41 +3,43 @@ apiVersion: 1
 datasources:
   # Participant write tenant. Used by the self-monitoring dashboard through
   # DS_PROMETHEUS, because vmagent writes vmanomaly/vmagent metrics there.
+  # Queries use the read token; writes use BEARER_TOKEN_WRITE through vmagent.
   - name: VM-Prometheus
     uid: VM-Prometheus
     type: prometheus
     access: proxy
-    url: ${VM_CLOUD_GRAFANA_DATASOURCE_URL}
+    url: $VM_CLOUD_GRAFANA_DATASOURCE_URL
     isDefault: true
     jsonData:
       prometheusType: Prometheus
       prometheusVersion: 2.55.0
       httpHeaderName1: Authorization
     secureJsonData:
-      httpHeaderValue1: Bearer ${VM_CLOUD_WRITE_BEARER_TOKEN}
+      httpHeaderValue1: Bearer $VM_CLOUD_READ_BEARER_TOKEN
 
   # Participant write tenant. Used by the anomaly-score dashboard through DS_VM.
+  # Queries use the read token; writes use BEARER_TOKEN_WRITE through vmagent.
   - name: VM-VictoriaMetrics
     uid: VM-VictoriaMetrics
     type: victoriametrics-metrics-datasource
     access: proxy
-    url: ${VM_CLOUD_GRAFANA_DATASOURCE_URL}
+    url: $VM_CLOUD_GRAFANA_DATASOURCE_URL
     isDefault: false
     jsonData:
       httpHeaderName1: Authorization
     secureJsonData:
-      httpHeaderValue1: Bearer ${VM_CLOUD_WRITE_BEARER_TOKEN}
+      httpHeaderValue1: Bearer $VM_CLOUD_READ_BEARER_TOKEN
 
   # Shared read tenant with pre-created raw synthetic APM metrics.
   - name: VM-Prometheus-Shared
     uid: VM-Prometheus-Shared
     type: prometheus
     access: proxy
-    url: ${VM_CLOUD_READ_GRAFANA_DATASOURCE_URL}
+    url: $VM_CLOUD_READ_GRAFANA_DATASOURCE_URL
     isDefault: false
     jsonData:
       prometheusType: Prometheus
       prometheusVersion: 2.55.0
       httpHeaderName1: Authorization
     secureJsonData:
-      httpHeaderValue1: Bearer ${VM_CLOUD_READ_BEARER_TOKEN}
+      httpHeaderValue1: Bearer $VM_CLOUD_READ_BEARER_TOKEN

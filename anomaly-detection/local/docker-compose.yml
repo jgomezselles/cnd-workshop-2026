@@ -53,7 +53,7 @@ services:
 
   dataloader:
     container_name: otel-apm-dataloader
-    image: victoriametrics/vmanomaly:v1.29.4-rc1
+    image: victoriametrics/vmanomaly:v1.29.4
     platform: "linux/amd64"
     profiles: [ "seed" ]
     depends_on:
@@ -77,7 +77,7 @@ services:
 
   vmanomaly:
     container_name: otel-apm-vmanomaly
-    image: victoriametrics/vmanomaly:v1.29.4-rc1
+    image: victoriametrics/vmanomaly:v1.29.4
     platform: "linux/amd64"
     user: "0:0"
     depends_on:

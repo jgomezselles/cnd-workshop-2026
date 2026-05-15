@@ -63,8 +63,8 @@ by container. (I also found interesting `object.regarding.fieldPath` to explore 
 ## Exporting logs to our remote instance
 
 Let's now go and enable everything:
-1. Go to your **VictoriaLogs** deployment `Access Tokens` section and pick one. (We're not using Tokens per tenant here!)
-2. Inside the [step-4.yaml](../helm/values/step-4.yaml) file, we need to make 3 changes:
+* Go to your **VictoriaLogs** deployment `Access Tokens` section and pick one. (We're not using Tokens per tenant here!)
+* Inside the [step-4.yaml](../helm/values/step-4.yaml) file, we need to make 3 changes:
   1. Add your token into the new `bearertokenauth/cloud-logs` extension
   2. Inside the `otlphttp/cloud-logs`, fill the `logs_endpoint`: with your url with this address: `https://XXXXX.cloud.victoriametrics.com/insert/opentelemetry/v1/logs`
   3. Set your `AccountID` and `ProjectID` with your tenant (i.e. if your tenant is `10:1`, you'll need to add `AccountID: "10"` and `ProjectID: "1"` )

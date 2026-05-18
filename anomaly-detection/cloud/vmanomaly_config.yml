@@ -57,7 +57,7 @@ models:
     iqr_threshold: 2
     seasonal_interval: "1d"
     min_subseason: "1h"
-    global_smoothing: 0.05
+    global_smoothing: 0.01
     decay: 0.95
     clip_predictions: true
     provide_series: ["y", "anomaly_score", "yhat", "yhat_lower", "yhat_upper"]

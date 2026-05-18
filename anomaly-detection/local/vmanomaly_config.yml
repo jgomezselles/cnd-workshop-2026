@@ -52,12 +52,12 @@ models:
   # duplicated by model_alias during participant exercises.
   seasonal_latency_band:
     class: "quantile_online"
-    quantiles: [0.25, 0.5, 0.75]
+    quantiles: [0.4, 0.5, 0.6]
     iqr_threshold: 2
-    seasonal_interval: "7d"
+    seasonal_interval: "1d"
     min_subseason: "1h"
-    global_smoothing: 0.05
-    decay: 0.93
+    global_smoothing: 0.01
+    decay: 0.95
     clip_predictions: true
     provide_series: ["y", "anomaly_score", "yhat", "yhat_lower", "yhat_upper"]
     schedulers: [online, backfill_online]

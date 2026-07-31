@@ -53,7 +53,8 @@ services:
 
   dataloader:
     container_name: otel-apm-dataloader
-    image: victoriametrics/vmanomaly:v1.29.4
+    # TODO: use victoriametrics/vmanomaly:v1.30.1 after it is released.
+    image: victoriametrics/vmanomaly:v1.30.0
     platform: "linux/amd64"
     profiles: [ "seed" ]
     depends_on:
@@ -77,7 +78,8 @@ services:
 
   vmanomaly:
     container_name: otel-apm-vmanomaly
-    image: victoriametrics/vmanomaly:v1.29.4
+    # TODO: use victoriametrics/vmanomaly:v1.30.1 after it is released.
+    image: victoriametrics/vmanomaly:v1.30.0
     platform: "linux/amd64"
     user: "0:0"
     depends_on:
@@ -101,6 +103,10 @@ services:
       VMANOMALY_BACKFILL_TO: ${VMANOMALY_BACKFILL_TO:-1970-01-01T00:00:00Z}
       VMANOMALY_UI_DATASOURCE_URL: http://victoriametrics:8428
       VMANOMALY_UI_DATASOURCE_TYPE: vm
+      VMANOMALY_COPILOT_ENABLED: ${VMANOMALY_COPILOT_ENABLED:-false}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      VMANOMALY_COPILOT_MODEL: ${VMANOMALY_COPILOT_MODEL:-anthropic:claude-sonnet-5}
+      VMANOMALY_MCP_SERVER_URL: http://mcp-vmanomaly:8080/mcp
     volumes:
       # Mount the config file directly so --watch can reload edited settings.
       - ./vmanomaly_config.yml:/config/vmanomaly_config.yml:ro
@@ -113,6 +119,23 @@ services:
       # Reload config changes without recreating the container. This is useful
       # while iterating on demo queries, schedulers, and model settings.
       - "--watch"
+    networks:
+      - otel_apm_net
+    restart: unless-stopped
+
+  mcp-vmanomaly:
+    container_name: otel-apm-mcp-vmanomaly
+    image: ghcr.io/victoriametrics/mcp-vmanomaly:v0.3.0
+    depends_on:
+      vmanomaly:
+        condition: service_started
+    ports:
+      - "8081:8080"
+    environment:
+      VMANOMALY_ENDPOINT: http://vmanomaly:8490
+      VMANOMALY_REQUEST_TIMEOUT: 60s
+      MCP_SERVER_MODE: http
+      MCP_LISTEN_ADDR: ":8080"
     networks:
       - otel_apm_net
     restart: unless-stopped

@@ -35,7 +35,8 @@ services:
 
   dataloader:
     container_name: otel-apm-dataloader-cloud
-    image: victoriametrics/vmanomaly:v1.29.4
+    # TODO: use victoriametrics/vmanomaly:v1.30.1 after it is released.
+    image: victoriametrics/vmanomaly:v1.30.0
     platform: "linux/amd64"
     profiles: ["seed"]
     depends_on:
@@ -59,7 +60,8 @@ services:
 
   vmanomaly:
     container_name: otel-apm-vmanomaly-cloud
-    image: victoriametrics/vmanomaly:v1.29.4
+    # TODO: use victoriametrics/vmanomaly:v1.30.1 after it is released.
+    image: victoriametrics/vmanomaly:v1.30.0
     platform: "linux/amd64"
     user: "0:0"
     depends_on:
@@ -87,6 +89,10 @@ services:
       # reader. Auth/TLS are proxied from reader settings by server config.
       VMANOMALY_UI_DATASOURCE_URL: ${VM_CLOUD_READ_GRAFANA_DATASOURCE_URL:-}
       VMANOMALY_UI_DATASOURCE_TYPE: vm
+      VMANOMALY_COPILOT_ENABLED: ${VMANOMALY_COPILOT_ENABLED:-false}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      VMANOMALY_COPILOT_MODEL: ${VMANOMALY_COPILOT_MODEL:-anthropic:claude-sonnet-5}
+      VMANOMALY_MCP_SERVER_URL: http://mcp-vmanomaly:8080/mcp
     volumes:
       - ./vmanomaly_config.yml:/config/vmanomaly_config.yml:ro
       - ../.secret/license:/run/secrets/vmanomaly_license:ro
@@ -97,6 +103,23 @@ services:
       - "/config/vmanomaly_config.yml"
       - "--loggerLevel=INFO"
       - "--watch"
+    networks:
+      - otel_apm_cloud_net
+    restart: unless-stopped
+
+  mcp-vmanomaly:
+    container_name: otel-apm-mcp-vmanomaly-cloud
+    image: ghcr.io/victoriametrics/mcp-vmanomaly:v0.3.0
+    depends_on:
+      vmanomaly:
+        condition: service_started
+    ports:
+      - "18081:8080"
+    environment:
+      VMANOMALY_ENDPOINT: http://vmanomaly:8490
+      VMANOMALY_REQUEST_TIMEOUT: 60s
+      MCP_SERVER_MODE: http
+      MCP_LISTEN_ADDR: ":8080"
     networks:
       - otel_apm_cloud_net
     restart: unless-stopped

@@ -118,6 +118,8 @@ if [[ "${RUN_DATALOADER}" == "1" ]]; then
 fi
 
 docker compose up -d --remove-orphans
+wait_http "vmanomaly" "http://localhost:8490/health"
+wait_http "MCP server" "http://localhost:8081/health/liveness"
 
 cat <<EOF
 
@@ -125,10 +127,12 @@ OTEL APM demo stack is starting.
   Grafana:         http://localhost:3000
   VictoriaMetrics: http://localhost:8428
   vmanomaly:       http://localhost:8490
+  MCP server:      http://localhost:8081/mcp
   vmalert:         http://localhost:8880
   Alertmanager:    http://localhost:9093
   Alert webhook:   http://localhost:5001
 
 Backfill window: ${VMANOMALY_BACKFILL_FROM} to ${VMANOMALY_BACKFILL_TO}
 Dataloader:      $(if [[ "${RUN_DATALOADER}" == "1" ]]; then echo "ran once"; else echo "skipped"; fi)
+AI Copilot:      $(if [[ "${VMANOMALY_COPILOT_ENABLED}" == "true" ]]; then echo "enabled (${VMANOMALY_COPILOT_MODEL})"; else echo "disabled; add .secret/ANTHROPIC_API_KEY to enable"; fi)
 EOF

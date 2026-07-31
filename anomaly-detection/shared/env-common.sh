@@ -7,6 +7,9 @@ BACKFILL_DAYS="${VMANOMALY_BACKFILL_DAYS:-3}"
 
 export VMANOMALY_BACKFILL_FROM
 export VMANOMALY_BACKFILL_TO
+export ANTHROPIC_API_KEY
+export VMANOMALY_COPILOT_ENABLED
+export VMANOMALY_COPILOT_MODEL
 
 utc_now() {
   date -u +"%Y-%m-%dT%H:%M:%SZ"
@@ -46,3 +49,19 @@ PY
 
 VMANOMALY_BACKFILL_FROM="$(utc_days_ago "${BACKFILL_DAYS}")"
 VMANOMALY_BACKFILL_TO="$(utc_now)"
+
+# Copilot is optional. Supplying the secret is enough to enable it; the MCP
+# tools server is started by Docker Compose in both workshop modes.
+ANTHROPIC_API_KEY_FILE="${SCRIPT_DIR}/../.secret/ANTHROPIC_API_KEY"
+if [[ -s "${ANTHROPIC_API_KEY_FILE}" ]]; then
+  ANTHROPIC_API_KEY="$(tr -d '\r\n' < "${ANTHROPIC_API_KEY_FILE}")"
+else
+  ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
+fi
+
+if [[ -n "${ANTHROPIC_API_KEY}" ]]; then
+  VMANOMALY_COPILOT_ENABLED="${VMANOMALY_COPILOT_ENABLED:-true}"
+else
+  VMANOMALY_COPILOT_ENABLED="${VMANOMALY_COPILOT_ENABLED:-false}"
+fi
+VMANOMALY_COPILOT_MODEL="${VMANOMALY_COPILOT_MODEL:-anthropic:claude-sonnet-5}"

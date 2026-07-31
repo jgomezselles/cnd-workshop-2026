@@ -2,8 +2,7 @@
 #
 # This makes backtesting and live output share the same stored labelset,
 # imitating that the data was produced by periodic schedulers all along:
-# - backfill_online become scheduler_alias="online"
-# - backfill_offline become scheduler_alias="offline"
+# - backfill_online becomes scheduler_alias="online"
 #
 # Workshop rationale: the backtesting schedulers prefill historical output so
 # dashboards look alive immediately. In a real long-running deployment the
@@ -18,10 +17,6 @@
 - if: '{scheduler_alias="backfill_online"}'
   target_label: scheduler_alias
   replacement: "online"
-
-- if: '{scheduler_alias="backfill_offline"}'
-  target_label: scheduler_alias
-  replacement: "offline"
 
 # Cloud shared raw-data reads may expose vm_account_id/vm_project_id labels.
 # Cloud writes are routed by the restricted write token, so these routing

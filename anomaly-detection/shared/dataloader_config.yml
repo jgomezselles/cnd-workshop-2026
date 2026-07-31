@@ -17,7 +17,7 @@ x-checkout-labels: &checkout_labels
 x-checkout-instances: &checkout_instances
   instance: ["checkout-api-0", "checkout-api-1", "checkout-api-2"]
 
-x-historical_length: &historical_length "21D"
+x-historical_length: &historical_length "42D"
 x-future_length: &future_length "2D"
 
 series:

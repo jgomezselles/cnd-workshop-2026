@@ -118,12 +118,15 @@ if [[ "${RUN_DATALOADER}" == "1" ]]; then
 fi
 
 "${COMPOSE[@]}" up -d --remove-orphans
+wait_http "vmanomaly" "http://localhost:18490/health"
+wait_http "MCP server" "http://localhost:18081/health/liveness"
 
 cat <<EOF
 
 OTEL APM cloud demo stack is starting.
   Grafana:      http://localhost:13000
   vmanomaly:    http://localhost:18490
+  MCP server:   http://localhost:18081/mcp
   vmagent:      http://localhost:18429
   vmalert:      http://localhost:18880
   Alertmanager: http://localhost:19093
@@ -136,4 +139,5 @@ Grafana datasource: ${VM_CLOUD_GRAFANA_DATASOURCE_URL}
 Cloud remote write: ${VM_CLOUD_REMOTE_WRITE_URL}
 Backfill window:  ${VMANOMALY_BACKFILL_FROM} to ${VMANOMALY_BACKFILL_TO}
 Dataloader:       $(if [[ "${RUN_DATALOADER}" == "1" ]]; then echo "ran once"; else echo "skipped"; fi)
+AI Copilot:       $(if [[ "${VMANOMALY_COPILOT_ENABLED}" == "true" ]]; then echo "enabled (${VMANOMALY_COPILOT_MODEL})"; else echo "disabled; add .secret/ANTHROPIC_API_KEY to enable"; fi)
 EOF

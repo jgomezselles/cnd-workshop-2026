@@ -23,6 +23,7 @@ names describe business behavior, and generated time series keep a stable
 - [Architecture](#architecture)
 - [Run the demo](#run-the-demo)
 - [Explore data and AD concepts](#explore-data-and-ad-concepts)
+- [Optional: explore with AI assistance](#optional-explore-with-ai-assistance)
 - [Grafana exercises](#grafana-exercises)
 - [Alerts and notifications](#alerts-and-notifications)
 - [Appendix: Synthetic dataset](#synthetic-dataset)
@@ -74,15 +75,15 @@ observations and exercises are the same.
 
 There are two deployment modes:
 
-- **Local mode:** runs VictoriaMetrics, vmagent, vmanomaly, Grafana, vmalert,
-  Alertmanager, and the webhook inbox on your machine. The synthetic
+- **Local mode:** runs VictoriaMetrics, vmagent, vmanomaly, its MCP tools
+  server, Grafana, vmalert, Alertmanager, and the webhook inbox on your machine. The synthetic
   dataloader is available through the `seed` profile and runs by default from
   `local/up.sh`.
 - **Cloud mode:** skips local VictoriaMetrics. vmanomaly and vmalert read from
   VictoriaMetrics Cloud, while vmanomaly, vmalert, and the optional dataloader
   write through local vmagent so writes can be buffered, relabeled, and
-  rate-limited. Grafana, Alertmanager, and the webhook inbox still run locally
-  on cloud-specific host ports.
+  rate-limited. The MCP server, Grafana, Alertmanager, and the webhook inbox
+  still run locally on cloud-specific host ports.
 
 In the workshop cloud layout, raw synthetic data is expected in the shared read
 tenant `1000:0`. Participant outputs are written to individual tenants such as
@@ -113,6 +114,7 @@ flowchart LR
 | vmagent | Lightweight metrics collector, relay, buffer, and remote-write agent. | Receives writes from the dataloader, vmanomaly, and vmalert; buffers, relabels, rate-limits, and forwards samples. | [vmagent](https://docs.victoriametrics.com/victoriametrics/vmagent/) |
 | vmanomaly | Anomaly detection component for time series. | Reads raw APM time series, fits/runs anomaly models, and writes model outputs such as `y`, `yhat`, confidence bands, and `anomaly_score`; this workshop stores them with the `otel_apm_` metric prefix. | [Anomaly Detection](https://docs.victoriametrics.com/anomaly-detection/) |
 | vmanomaly UI | Interactive UI for anomaly-detection configuration and exploration. | Lets you inspect configured queries and run/finetune models on historical incidents before it goes to production. | [Anomaly Detection UI](https://docs.victoriametrics.com/anomaly-detection/ui/) |
+| mcp-vmanomaly | MCP tools server for vmanomaly. | Gives the optional UI Copilot access to current schemas, documentation, time-series characteristics, validation, and autotune workflows. | [mcp-vmanomaly](https://github.com/VictoriaMetrics/mcp-vmanomaly) |
 | Grafana | Dashboarding and visualization layer. | Shows the anomaly score dashboard and vmanomaly self-monitoring dashboard. | [Grafana docs](https://grafana.com/docs/grafana/latest/) |
 | vmalert | Rule evaluator for alerts and recording rules. | Evaluates alerting rules against anomaly scores and sends firing alerts to Alertmanager. | [vmalert](https://docs.victoriametrics.com/victoriametrics/vmalert/) |
 | Alertmanager | Alert grouping, deduplication, silencing, and routing service. | Groups vmalert notifications and routes them to the local webhook inbox. | [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) |
@@ -125,6 +127,7 @@ flowchart LR
 
 ```text
 anomaly-detection/
+  .secret.example/         # safe templates for local secret files
   .secret/                 # credentials and license files, never committed
   shared/                  # generator, shared dashboards, common env, relabeling
   local/                   # self-contained Docker Compose stack
@@ -151,6 +154,7 @@ You need:
 - Docker Compose v2 (`docker compose`)
 - a POSIX shell for helper scripts: Linux/macOS Terminal or WSL 2 on Windows
 - a vmanomaly license file
+- optionally, an Anthropic API key for the vmanomaly UI Copilot
 - for Cloud mode only: VictoriaMetrics Cloud query URL, tenant IDs, and bearer
   tokens supplied by organizers
 
@@ -211,11 +215,25 @@ Create the local secret directory from the repository root:
 mkdir -p anomaly-detection/.secret
 ```
 
+Safe templates and the expected file names are in
+[`anomaly-detection/.secret.example`](./.secret.example/). Copy a template,
+remove its `.example` suffix, and replace its content with the real value.
+
 Required for both modes:
 
 ```text
 anomaly-detection/.secret/license
 ```
+
+Optional for AI-assisted exploration in either mode:
+
+```text
+anomaly-detection/.secret/ANTHROPIC_API_KEY
+```
+
+When this file is non-empty, `up.sh` enables Copilot with
+`VMANOMALY_COPILOT_MODEL=anthropic:claude-sonnet-5`. The MCP server starts in
+both modes even when Copilot is disabled.
 
 Required for Cloud mode:
 
@@ -255,6 +273,8 @@ Local mode:
 flowchart LR
   loader["dataloader<br/>one-shot seed"] -->|"seed synthetic metrics"| agent["vmagent<br/>buffer + relabel"]
   anomaly["vmanomaly"] -->|"write model outputs"| agent
+  mcp["mcp-vmanomaly<br/>tools + docs"] -->|"vmanomaly API"| anomaly
+  anomaly -.->|"UI Copilot tools"| mcp
   agent -->|"buffer + relabel writes"| vm["VictoriaMetrics<br/>single-node"]
   vm -->|"read raw series"| anomaly
   vm -->|"query dashboards"| grafana["Grafana"]
@@ -271,6 +291,8 @@ Cloud mode:
 flowchart LR
   loader["optional dataloader"] -->|"seed synthetic metrics"| agent["local vmagent<br/>buffer + rate limit"]
   anomaly["vmanomaly"] -->|"write model outputs"| agent
+  mcp["mcp-vmanomaly<br/>tools + docs"] -->|"vmanomaly API"| anomaly
+  anomaly -.->|"UI Copilot tools"| mcp
   vmalert["vmalert"] -->|"write alert state"| agent
   agent -->|"rate-limit writes"| cloud["VictoriaMetrics Cloud"]
   cloud -->|"read raw series"| anomaly
@@ -308,6 +330,7 @@ Open:
 - Grafana: http://localhost:3000
 - VictoriaMetrics: http://localhost:8428
 - vmanomaly UI: http://localhost:8490
+- MCP endpoint: http://localhost:8081/mcp
 - vmalert: http://localhost:8880
 - Alertmanager: http://localhost:9093
 - Alert webhook inbox: http://localhost:5001
@@ -341,6 +364,7 @@ Open:
 
 - Grafana: http://localhost:13000
 - vmanomaly UI: http://localhost:18490
+- MCP endpoint: http://localhost:18081/mcp
 - vmagent: http://localhost:18429
 - vmalert: http://localhost:18880
 - Alertmanager: http://localhost:19093
@@ -351,6 +375,7 @@ Follow logs:
 ```sh
 docker compose logs -f dataloader
 docker compose logs -f vmanomaly
+docker compose logs -f mcp-vmanomaly
 docker compose logs -f vmagent
 docker compose logs -f vmalert
 docker compose logs -f alert-webhook
@@ -376,8 +401,8 @@ The walkthrough order is:
    alerting.
 3. Name the concepts visible in the data: seasonality, trend, changepoint,
    contextual anomaly, and slow trend.
-4. Tune and run a simple anomaly-detection model in the UI, for example a
-   Median-absolute-deviation (MAD)-style robust baseline, then apply basic domain knowledge such as detection direction or a minimum meaningful deviation.
+4. Compare a simple robust MAD baseline with Temporal Envelope, then apply
+   domain knowledge such as detection direction or a minimum meaningful deviation.
 
 <details>
 <summary>AD terms used in this walkthrough</summary>
@@ -469,6 +494,32 @@ goal is to translate business assumptions into model behavior, not to memorize
 configuration keys. See the VictoriaMetrics FAQ section on
 [incorporating domain knowledge](https://docs.victoriametrics.com/anomaly-detection/faq/#incorporating-domain-knowledge)
 for the same idea in product documentation.
+
+[Back to ToC](#toc)
+
+## Optional: explore with AI assistance
+
+If `.secret/ANTHROPIC_API_KEY` was supplied before `up.sh`, open Copilot from
+the bottom-right of the vmanomaly UI. It already knows the active UI state and
+can use the colocated MCP server to inspect real query characteristics,
+explain model parameters, validate changes, and run bounded autotune tasks.
+
+Try requests such as:
+
+- “Use the current query and explain whether MAD or Temporal Envelope is the
+  better fit for this data.”
+- “Inspect this latency query, suggest a model for spikes above expected, and
+  validate the configuration.”
+- “The model misses traffic drops. Keep the current query and propose a safer
+  configuration without creating too many alerts.”
+
+Review each proposed YAML diff and rerun detection before moving it into the
+production configuration. Setup details and supported workflows are in the
+[AI assistance guide](https://docs.victoriametrics.com/anomaly-detection/ui/#ai-assistance).
+For agent-driven workflows outside the UI, the
+[VictoriaMetrics skills](https://github.com/VictoriaMetrics/skills) provide
+repeatable query inspection, model selection, and configuration-validation
+playbooks that can use the same vmanomaly APIs and MCP tools.
 
 [Back to ToC](#toc)
 

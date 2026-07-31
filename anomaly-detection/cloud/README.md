@@ -6,6 +6,7 @@ buffers, rate-limits, relabels, and forwards samples to Cloud.
 
 Cloud mode also starts Alertmanager and the local webhook inbox, so alert
 notifications can be inspected without Slack, email, or external credentials.
+It also starts mcp-vmanomaly for optional AI-assisted work in the vmanomaly UI.
 
 > **Note:** Cloud host ports are offset from local mode, so both stacks can run
 > side by side on one machine.
@@ -14,6 +15,8 @@ notifications can be inspected without Slack, email, or external credentials.
 flowchart LR
   loader["optional dataloader"] -->|"seed synthetic metrics"| agent["local vmagent<br/>buffer + rate limit"]
   anomaly["vmanomaly"] -->|"write model outputs"| agent
+  mcp["mcp-vmanomaly"] -->|"tools + docs"| anomaly
+  anomaly -.->|"UI Copilot"| mcp
   agent -->|"rate-limit writes"| cloud["VictoriaMetrics Cloud<br/>remote write"]
   cloud -->|"read raw series"| anomaly
   cloud -->|"query dashboards"| grafana["Grafana"]
@@ -71,9 +74,14 @@ path for that token.
 Optional:
 
 ```bash
+anomaly-detection/.secret/ANTHROPIC_API_KEY
 anomaly-detection/.secret/grafana_datasource_url
 anomaly-detection/.secret/remote_write_url
 ```
+
+When `ANTHROPIC_API_KEY` is present, `up.sh` enables the vmanomaly UI Copilot
+with `anthropic:claude-sonnet-5`. MCP starts even when the key is omitted. See
+the [AI assistance guide](https://docs.victoriametrics.com/anomaly-detection/ui/#ai-assistance).
 
 ## Start
 
@@ -110,6 +118,7 @@ Open:
 
 - Grafana: http://localhost:13000
 - vmanomaly UI: http://localhost:18490
+- MCP endpoint: http://localhost:18081/mcp
 - vmagent: http://localhost:18429
 - vmalert: http://localhost:18880
 - Alertmanager: http://localhost:19093
@@ -123,10 +132,19 @@ Useful logs:
 ```bash
 docker compose logs -f vmagent
 docker compose logs -f vmanomaly
+docker compose logs -f mcp-vmanomaly
 docker compose logs -f vmalert
 docker compose logs -f grafana
 docker compose logs -f alert-webhook
 ```
+
+## Explore In vmanomaly UI
+
+Replay the configured server queries and compare the online models: Temporal
+Envelope follows smooth daily/weekly latency and traffic patterns, while MAD
+is the lightweight baseline for payment errors. With Copilot enabled, ask it
+to inspect the active Cloud query, explain the model choice, or validate a
+tuning change before applying it.
 
 ## Inspect In Grafana
 
